@@ -20,7 +20,7 @@ double SensorHDC1080::measureValue(MeasureType iMeasureType) {
 
 bool SensorHDC1080::begin() {
     bool lResult = false;
-    printf("Starting sensor HDC1080... ", false);
+    printDebug("Starting sensor HDC1080... ");
     ClosedCube_HDC1080::begin(gAddress);
     lResult = Sensor::begin();
     printResult(lResult);

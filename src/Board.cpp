@@ -4,7 +4,7 @@
 #include "EepromManager.h"
 
 void savePower() {
-    printf("savePower: Switching off 5V rail...", true);
+    printDebug("savePower: Switching off 5V rail...\n");
     // turn off 5V rail (CO2-Sensor & Buzzer)
     uint8_t lBuffer[] = {U_INT_REG_WR_REQ_ACR0, ACR0_FLAG_XCLKEN | ACR0_FLAG_V20VCLIMIT };
     // get rid of knx reference
@@ -19,7 +19,7 @@ void savePower() {
 }
 
 void restorePower(){
-    printf("restorePower: Switching on 5V rail...", true);
+    printDebug("restorePower: Switching on 5V rail...\n");
     // turn off 5V rail (CO2-Sensor & Buzzer)
     uint8_t lBuffer[] = {U_INT_REG_WR_REQ_ACR0, ACR0_FLAG_DC2EN | ACR0_FLAG_XCLKEN | ACR0_FLAG_V20VCLIMIT};
     // get rid of knx reference
@@ -124,7 +124,7 @@ void fatalError(uint8_t iErrorCode, const char* iErrorText) {
     {
         // we repeat the message on serial bus, so we can get it even 
         // if we connect USB later
-        printf("FatalError %d: %s", true, iErrorCode, iErrorText);
+        printDebug("FatalError %d: %s\n", iErrorCode, iErrorText);
         digitalWrite(LED_YELLOW_PIN, HIGH);
         delay(lDelay);
         // number of red blinks during a yellow blink is the error code
@@ -149,19 +149,19 @@ bool boardCheck()
 {
     bool lResult = false;
     // we check herer Hardware we rely on
-    printf("Checking for EEPROM existence... ", false);
+    printDebug("Checking for EEPROM existence... ");
     // ceck for I2C ack
     Wire.beginTransmission(I2C_EEPROM_DEVICE_ADDRESSS);
     lResult = (Wire.endTransmission() == 0);
     printResult(lResult);
 
-    printf("Checking for 1-Wire existence... ", false);
+    printDebug("Checking for 1-Wire existence... ");
     // ceck for I2C ack
     Wire.beginTransmission(I2C_1WIRE_DEVICE_ADDRESSS);
     lResult = (Wire.endTransmission() == 0);
     printResult(lResult);
 
-    printf("Checking NCN5130 existence... ", false);
+    printDebug("Checking NCN5130 existence... ");
     lResult = false;
     // send system state command and interpret answer
     uint8_t cmd = U_SYSTEM_STATE;

@@ -25,7 +25,7 @@ double SensorSCD30::measureValue(MeasureType iMeasureType) {
 }
 
 bool SensorSCD30::begin() {
-    printf("Starting sensor SCD30... ", false);
+    printDebug("Starting sensor SCD30... ");
     bool lResult = SCD30::begin();
     if (lResult) lResult = Sensor::begin();
     printResult(lResult);

@@ -1,17 +1,14 @@
 #include "Helper.h"
 
 // generic helper for formatted debug output
-int printf(const char *format, bool iNewLine, ...)
+int printDebug(const char *format, ...)
 {
     char buffer[256];
     va_list args;
     va_start(args, format);
     int lResult = vsnprintf(buffer, 256, format, args);
     va_end(args);
-    if (iNewLine) 
-        SerialUSB.println(buffer);
-    else
-        SerialUSB.print(buffer);
+    SerialUSB.print(buffer);
     return lResult;
 }
 

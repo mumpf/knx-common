@@ -10,7 +10,7 @@
  * *******************/
 
 // generic helper for formatted debug output
-int printf(const char *format, bool iNewLine, ...);
+int printDebug(const char *format, ...);
 void printHEX(const char* iPrefix, const uint8_t *iData, size_t iLength);
 void printResult(bool iResult);
 

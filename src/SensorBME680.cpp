@@ -46,7 +46,7 @@ void SensorBME680::sensorLoopInternal() {
         case Wakeup:
             if (gSensorStateDelay == 0 || delayCheck(gSensorStateDelay, 1000))
             {
-                printf("Restarting Sensor BME680...", false);
+                printDebug("Restarting Sensor BME680... ");
                 Bsec::setConfig(bsec_config_iaq);
                 lResult = checkIaqSensorStatus();
                 if (lResult)
@@ -110,7 +110,7 @@ double SensorBME680::measureValue(MeasureType iMeasureType) {
 }
 
 bool SensorBME680::begin() {
-    printf("Starting sensor BME680... ", false);
+    printDebug("Starting sensor BME680... ");
     Bsec::begin(BME680_I2C_ADDR_PRIMARY, Wire, mDelayCallback);
     bool lResult = checkIaqSensorStatus();
     if (lResult) {
@@ -137,21 +137,21 @@ bool SensorBME680::checkIaqSensorStatus(void)
 {
     if (Bsec::status < BSEC_OK)
     {
-        printf("BSEC error code : %d", true, Bsec::status);
+        printDebug("BSEC error code : %d\n", Bsec::status);
         return false;
         // fatalError(-iaqSensor.status, "BSEC error code");
     }
     else if (Bsec::status > BSEC_OK)
-        printf("BSEC warning code : %d", true, Bsec::status);
+        printDebug("BSEC warning code : %d\n", Bsec::status);
 
     if (Bsec::bme680Status < BME680_OK)
     {
-        printf("BME680 error code : %d", true, Bsec::bme680Status);
+        printDebug("BME680 error code : %d\n", Bsec::bme680Status);
         return false;
         // fatalError(-iaqSensor.bme680Status, "BME680 error code");
     }
     else if (Bsec::bme680Status > BME680_OK)
-        printf("BME680 warning code : %d", true, Bsec::bme680Status);
+        printDebug("BME680 warning code : %d\n", Bsec::bme680Status);
 
     return true;
 }
@@ -160,7 +160,7 @@ void SensorBME680::sensorLoadState()
 {
     uint8_t buffer[144]; //[BSEC_MAX_STATE_BLOB_SIZE];
     // Existing state in EEPROM
-    printf("Reading BME680 state from EEPROM", true);
+    printDebug("Reading BME680 state from EEPROM\n");
     mEEPROM->prepareRead(EEPROM_BME680_START_ADDRESS, 144);
     if (Wire.available()) Wire.readBytes(buffer, 144);
 
@@ -195,7 +195,7 @@ void SensorBME680::sensorSaveState()
     Bsec::getState(buffer + 4);
     bool lCheck = checkIaqSensorStatus();
     if (lCheck) { 
-    printf("Writing BME680 state to EEPROM", true);
+    printDebug("Writing BME680 state to EEPROM\n");
 
     for (uint8_t lCount = 0; lCount < 144; lCount += 16)
         {

@@ -72,9 +72,6 @@
 #define ACR0_FLAG_TRIGEN           0x08
 #define ACR0_FLAG_V20VCLIMIT       0x04
 
-// generic helper for formatted debug output
-// int printf(const char *format, ...);
-// void printResult(bool iResult);
 
 // check board hardware availibility
 bool boardCheck();
@@ -83,19 +80,4 @@ void savePower();
 // Turn on 5V rail from NCN5130 in case SAVE-Interrupt was false positive
 void restorePower();
 
-// // During EEPROM Write we have to delay 5 ms
-// #define EEPROM_WRITE_DELAY 5
-
-// writing KOs is a transaction with a specific begin and end state
-// bool beginWriteKoEEPROM();
-// void endWriteKoEEPROM();
-// void beginPageEEPROM(uint16_t iAddress);
-// void endPageEEPROM();
-// void write4BytesEEPROM(uint8_t *iData, uint8_t iLen);
-// void prepareReadEEPROM(uint16_t iAddress, uint8_t iLen);
-// bool checkDataValidEEPROM();
-// bool isValidEEPROM();
 void fatalError(uint8_t iErrorCode, const char *iErrorText = 0);
-// bool delayCheck(uint32_t iOldTimer, uint32_t iDuration);
-// void writeMagicWordToEEPROM(uint16_t iAddress);
-// bool checkMagicWordInEEPROM(uint16_t iAddress);
