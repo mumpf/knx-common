@@ -35,7 +35,7 @@ void Sensor::restartSensor() {
     gSensorState = Wakeup;
 }
 
-bool Sensor::CheckSensorConnection()
+bool Sensor::checkSensorConnection()
 {
     bool lResult = false;
     if (gSensorState == Running) {
@@ -70,7 +70,7 @@ void Sensor::sensorLoopInternal() {
 
 bool Sensor::begin() {
     gSensorState = Running;
-    return CheckSensorConnection();
+    return checkSensorConnection();
 }
 
 // should be overridden, if there is a state to save before power failure
@@ -89,7 +89,9 @@ bool Sensor::measureValue(MeasureType iMeasureType, double& eValue) {
     for (uint8_t lCounter = 0; lCounter < sNumSensors; lCounter++)
     {
         if (sSensors[lCounter]->gMeasureTypes & iMeasureType) {
-            lResult = sSensors[lCounter]->CheckSensorConnection();
+            lResult = sSensors[lCounter]->checkSensorConnection();
+            if (lResult)
+                lResult = sSensors[lCounter]->gSensorState == Running;
             if (lResult) eValue = sSensors[lCounter]->measureValue(iMeasureType);
             break;
         }

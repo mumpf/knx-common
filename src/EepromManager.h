@@ -11,7 +11,6 @@
  * size information. Different instances will
  * also prevent overlap
  * *******************************************/
-#define I2C_EEPROM_DEVICE_ADDRESSS 0x50 // Address of 24LC256 eeprom chip
 // During EEPROM Write we have to delay 5 ms
 #define EEPROM_WRITE_DELAY 5
 

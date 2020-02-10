@@ -43,7 +43,7 @@ class Sensor
     SensorState gSensorState = Off;
     uint32_t gSensorStateDelay = 0;
 
-    bool CheckSensorConnection();
+    bool checkSensorConnection();
     virtual double measureValue(MeasureType iMeasureType) = 0; //pure
     virtual void sensorLoopInternal();
     virtual void sensorSaveState();
