@@ -20,6 +20,8 @@ void restorePower(){
     uint8_t lBuffer[] = {U_INT_REG_WR_REQ_ACR0, ACR0_FLAG_DC2EN | ACR0_FLAG_XCLKEN | ACR0_FLAG_V20VCLIMIT};
     // get rid of knx reference
     Serial1.write(lBuffer, 2);
+    // give all sensors some time to init
+    delay(100);
 }
 
 void fatalError(uint8_t iErrorCode, const char* iErrorText) {
@@ -50,15 +52,21 @@ bool boardCheck()
 {
     bool lResult = false;
     // we check herer Hardware we rely on
-    printDebug("Checking for EEPROM existence... ");
+    printDebug("Checking EEPROM existence... ");
     // ceck for I2C ack
     Wire.beginTransmission(I2C_EEPROM_DEVICE_ADDRESSS);
     lResult = (Wire.endTransmission() == 0);
     printResult(lResult);
 
-    printDebug("Checking for 1-Wire existence... ");
+    printDebug("Checking 1-Wire existence... ");
     // ceck for I2C ack
     Wire.beginTransmission(I2C_1WIRE_DEVICE_ADDRESSS);
+    lResult = (Wire.endTransmission() == 0);
+    printResult(lResult);
+
+    printDebug("Checking LED driver existence... ");
+    // ceck for I2C ack
+    Wire.beginTransmission(I2C_RGBLED_DEVICE_ADDRESS);
     lResult = (Wire.endTransmission() == 0);
     printResult(lResult);
 

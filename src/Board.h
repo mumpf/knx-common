@@ -25,6 +25,7 @@
 #define BUZZER_PIN 9
 #define I2C_1WIRE_DEVICE_ADDRESSS 0x18 // Address of DS2484 1-Wire-Busmaster chip
 #define I2C_EEPROM_DEVICE_ADDRESSS 0x50 // Address of 24LC256 eeprom chip
+#define I2C_RGBLED_DEVICE_ADDRESS 0x60  // Address of PCA9632 RBGW-LED-Driver
 #endif
 #ifdef BOARD_MASIFI_V3
 #define PROG_LED_PIN 13
