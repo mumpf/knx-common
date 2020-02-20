@@ -19,7 +19,7 @@ protected:
     bme680_delay_fptr_t mDelayCallback = 0;
 
   public:
-    SensorBME680(uint8_t iMeasureTypes, uint8_t iAddress, bme680_delay_fptr_t iDelayCallback);
+    SensorBME680(uint8_t iMeasureTypes, uint8_t iAddress, bme680_delay_fptr_t iDelayCallback, uint8_t iMagicKeyOffset);
     virtual ~SensorBME680() {}
     bool begin() override;
 
@@ -28,5 +28,4 @@ protected:
     static uint8_t bsec_config_iaq[454];
     EepromManager *mEEPROM;
     uint8_t mLastAccuracy = 0;
-
 };
