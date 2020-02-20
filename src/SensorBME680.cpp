@@ -5,12 +5,16 @@
 #define STATE_SAVE_PERIOD  UINT32_C(360 * 60 * 1000) // 360 minutes - 4 times a day
 #define EEPROM_BME680_START_ADDRESS 0xC80
 
+SensorBME680::SensorBME680(uint8_t iMeasureTypes, uint8_t iAddress, bme680_delay_fptr_t iDelayCallback)
+    : Sensor(iMeasureTypes, iAddress), Bsec(), mDelayCallback(iDelayCallback) {
+    mEEPROM = new EepromManager(100, 5, sMagicWord);
+}
 
 SensorBME680::SensorBME680(uint8_t iMeasureTypes, uint8_t iAddress, bme680_delay_fptr_t iDelayCallback, uint8_t iMagicKeyOffset)
     : Sensor(iMeasureTypes, iAddress), Bsec(), mDelayCallback(iDelayCallback) {
-        mEEPROM = new EepromManager(100, 5, sMagicWord);
-        sMagicWord[0] ^= iMagicKeyOffset;
-    };
+    mEEPROM = new EepromManager(100, 5, sMagicWord);
+    sMagicWord[0] ^= iMagicKeyOffset;
+};
 
 bsec_virtual_sensor_t SensorBME680::sensorList[] = {
     BSEC_OUTPUT_IAQ,
