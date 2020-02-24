@@ -1,5 +1,5 @@
 #include <Wire.h>
-#include "Board.h"
+#include "Hardware.h"
 #include "Helper.h"
 #include "EepromManager.h"
 
@@ -51,24 +51,31 @@ void fatalError(uint8_t iErrorCode, const char* iErrorText) {
 bool boardCheck()
 {
     bool lResult = false;
+
+#ifdef I2C_EEPROM_DEVICE_ADDRESSS
     // we check herer Hardware we rely on
     printDebug("Checking EEPROM existence... ");
     // ceck for I2C ack
     Wire.beginTransmission(I2C_EEPROM_DEVICE_ADDRESSS);
     lResult = (Wire.endTransmission() == 0);
     printResult(lResult);
+#endif
 
+#ifdef I2C_1WIRE_DEVICE_ADDRESSS
     printDebug("Checking 1-Wire existence... ");
     // ceck for I2C ack
     Wire.beginTransmission(I2C_1WIRE_DEVICE_ADDRESSS);
     lResult = (Wire.endTransmission() == 0);
     printResult(lResult);
+#endif
 
+#ifdef I2C_RGBLED_DEVICE_ADDRESS
     printDebug("Checking LED driver existence... ");
     // ceck for I2C ack
     Wire.beginTransmission(I2C_RGBLED_DEVICE_ADDRESS);
     lResult = (Wire.endTransmission() == 0);
     printResult(lResult);
+#endif
 
     printDebug("Checking NCN5130 existence... ");
     lResult = false;

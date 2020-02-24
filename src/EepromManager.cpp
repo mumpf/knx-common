@@ -1,6 +1,6 @@
 #include <Wire.h>
+#include "Hardware.h"
 #include "EepromManager.h"
-#include "Board.h"
 
 EepromManager::EepromManager(uint16_t iStartPage, uint16_t iNumPages, uint8_t *iMagicWord)
 {
