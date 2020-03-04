@@ -190,12 +190,17 @@ void SensorBME680::sensorLoadState()
     if (lCheck) {
         Bsec::setState(buffer + 4);
         bool lResult = checkIaqSensorStatus();
-        // if sensor state was not correctly loaded, we delete EEPROM data 
-        if (!lResult) {
+        if (lResult) {
+            printDebug("BME680 was successfully calibrated from EEPROM\n");
+        } else {
+            // if sensor state was not correctly loaded, we delete EEPROM data 
             mEEPROM->beginPage(EEPROM_BME680_START_ADDRESS);
             mEEPROM->write4Bytes(sMagicWord, 1); // this is correct, it deletes the last 3 bytes of magic word
             mEEPROM->endPage();
+            printDebug("*** BME680 calibration from EEPROM failed! ***\n");
         }
+    } else {
+        printDebug("BME680 calibration data in EEPROM has wrong ID and will be deleted!\n");
     }
 }
 
@@ -228,7 +233,7 @@ void SensorBME680::sensorUpdateState(void)
 {
     // we save the sensor state each time accuracy is raised 
     // and 4 times a day if accuracy is 3 (this might be senseless, if we save with each restart)
-    if ((Bsec::iaqAccuracy > mLastAccuracy) || (Bsec::iaqAccuracy >= 3 && delayCheck(stateUpdateTimer, STATE_SAVE_PERIOD)))
+    if ((Bsec::iaqAccuracy > mLastAccuracy && mLastAccuracy == 2) || (Bsec::iaqAccuracy >= 3 && delayCheck(stateUpdateTimer, STATE_SAVE_PERIOD)))
     {
         sensorSaveState();
         stateUpdateTimer = millis();

@@ -26,8 +26,8 @@ enum MeasureType {
     Pressure = 8,
     Voc = 16,
     Co2 = 32,
-    Accuracy = 64,
-    Reserved = 128 // temporary: co2 from voc
+    Reserved = 64, // temporary: co2 from voc
+    Accuracy = 128
 };
 
 class Sensor
