@@ -26,7 +26,7 @@ enum MeasureType {
     Pressure = 8,
     Voc = 16,
     Co2 = 32,
-    Reserved = 64, // temporary: co2 from voc
+    Co2Calc = 64, // calculated Co2 from VOC
     Accuracy = 128
 };
 
@@ -60,6 +60,7 @@ class Sensor
     static uint8_t getError();
     static void saveState();
     static void restartSensors();
+    static void changeSensorOrder(Sensor *iSensor, uint8_t iPosition);
 
     virtual bool begin(); // first initialization, may be blocking, should be called druing setup(), not during loop()
 };

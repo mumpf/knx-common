@@ -15,9 +15,6 @@ double SensorSCD30::measureValue(MeasureType iMeasureType) {
     case Co2:
         return getCO2();
         break;
-    case Reserved:
-        return getCO2();
-        break;
     default:
         break;
     }

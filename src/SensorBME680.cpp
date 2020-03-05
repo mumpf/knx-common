@@ -112,7 +112,7 @@ double SensorBME680::measureValue(MeasureType iMeasureType) {
         case Voc:
             return Bsec::iaq;
             break;
-        case Co2:
+        case Co2Calc:
             return Bsec::co2Equivalent;
             break;
         case Accuracy:

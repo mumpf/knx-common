@@ -35,6 +35,15 @@ void Sensor::restartSensor() {
     gSensorState = Wakeup;
 }
 
+void Sensor::changeSensorOrder(Sensor *iSensor, uint8_t iPosition){
+    // first check, if the sensor is already at his position
+    if (sSensors[iPosition] == iSensor) return;
+    // as long as we have just 2 Sensors, new position is a simple exchange
+    int8_t lNewPosition = abs(iPosition - 1);
+    sSensors[lNewPosition] = sSensors[iPosition];
+    sSensors[iPosition] = iSensor;
+}
+
 bool Sensor::checkSensorConnection()
 {
     bool lResult = false;
