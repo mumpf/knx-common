@@ -101,7 +101,8 @@ double SensorBME680::measureValue(MeasureType iMeasureType) {
     switch (iMeasureType)
     {
         case Temperature:
-            return Bsec::temperature;
+            // hardware calibration
+            return Bsec::temperature - 3.5;
             break;
         case Humidity:
             return Bsec::humidity;

@@ -7,7 +7,8 @@ double SensorSCD30::measureValue(MeasureType iMeasureType) {
     switch (iMeasureType)
     {
     case Temperature:
-        return getTemperature();
+        // hardware calibration
+        return getTemperature() - 3.0;
         break;
     case Humidity:
         return getHumidity();
