@@ -2,15 +2,6 @@
 // #include <knx/bits.h>
 #include "Helper.h"
 
-#define BIT_1WIRE 1
-#define BIT_Temp 2
-#define BIT_Hum 4
-#define BIT_Pre 8
-#define BIT_Voc 16
-#define BIT_Co2 32
-#define BIT_RESERVE 64
-#define BIT_LOGIC 128
-
 enum SensorState {
     Off,
     Wakeup,
