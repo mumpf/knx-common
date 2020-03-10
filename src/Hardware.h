@@ -13,10 +13,23 @@
 #define PROG_BUTTON_PIN 10
 #define PROG_BUTTON_PIN_INTERRUPT_ON RISING
 #define SAVE_INTERRUPT_PIN 17
-#define BUZZER_PIN 17
+#define BUZZER_PIN 18
 #define I2C_EEPROM_DEVICE_ADDRESSS 0xFF // Address of 24LC256 eeprom chip
 #endif
-#ifdef BOARD_MASIFI
+#ifdef BOARD_MASIFI_V1
+#define PROG_LED_PIN 13
+#define PROG_LED_PIN_ACTIVE_ON HIGH
+#define PROG_BUTTON_PIN 11
+#define PROG_BUTTON_PIN_INTERRUPT_ON FALLING
+#define SAVE_INTERRUPT_PIN 8
+#define LED_YELLOW_PIN 38
+// Buzzer
+#define BUZZER_PIN 9
+#define I2C_1WIRE_DEVICE_ADDRESSS 0x1A  // Address of DS2484 1-Wire-Busmaster chip
+#define I2C_EEPROM_DEVICE_ADDRESSS 0x50 // Address of 24LC256 eeprom chip
+#define I2C_RGBLED_DEVICE_ADDRESS 0x60  // Address of PCA9632 RBGW-LED-Driver
+#endif
+#ifdef BOARD_MASIFI_V2
 #define PROG_LED_PIN 13
 #define PROG_LED_PIN_ACTIVE_ON HIGH
 #define PROG_BUTTON_PIN 11
@@ -50,10 +63,7 @@
 #define SAVE_INTERRUPT_PIN 8
 #define LED_YELLOW_PIN 38
 // Buzzer
-// #define BUZZER_PIN 9
-// #define I2C_1WIRE_DEVICE_ADDRESSS 0x18  // Address of DS2484 1-Wire-Busmaster chip
 #define I2C_EEPROM_DEVICE_ADDRESSS 0x50 // Address of 24LC256 eeprom chip
-// #define I2C_RGBLED_DEVICE_ADDRESS 0x60  // Address of PCA9632 RBGW-LED-Driver
 #endif
 
 // board independent definitions
