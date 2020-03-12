@@ -38,11 +38,15 @@
 #define DS2482_ERROR_SHORT (1 << 1)
 #define DS2482_ERROR_CONFIG (1 << 2)
 
+
 class OneWireDS2482
 {
   public:
     OneWireDS2482();
     OneWireDS2482(uint8_t address);
+
+    void setup();
+    void loop();
 
     uint8_t getAddress();
     uint8_t getError();

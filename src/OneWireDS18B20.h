@@ -8,6 +8,7 @@
 #pragma once
 
 #include <inttypes.h>
+#include "OneWire.h"
 #include "OneWireDS2482.h"
 
 // byte 0: temperature LSB
@@ -55,103 +56,57 @@
 #define TEMP_11_BIT 0x5F // 11 bit
 #define TEMP_12_BIT 0x7F // 12 bit
 
+enum SensorState
+{
+    Startup,
+    StartMeasurement,
+    GetMeasure,
+    Idle,
+    Error
+};
 
-class OneWireDS18B20
+class OneWireDS18B20 : OneWire
 {
   public:
-    OneWireDS18B20();
-    void init(OneWireDS2482 *ow, uint8_t *address_DS18B20, bool isactive, float diff_T, bool Alarm1, float Alarm1_HT, float Alarm1_TT, bool Alarm2, float Alarm2_HT, float Alarm2_TT );
-    //TEMP
-    bool startConversion_Temp();
-    bool update_Temp();
+    OneWireDS18B20(OneWireDS2482 *iBusMaster, uint8_t *iId);
+    void init( bool iIsActive );
+
     float getTemp();
 
-    void setActive(bool state);
-    bool getisActive();
+    void isActive(bool iState);
+    bool isActive();
 
     // attempt to determine if the device at the given address is connected to the bus
     bool isConnected();
 
-    // attempt to determine if the device at the given address is connected to the bus
-    bool isConnected(const uint8_t*);
-
-    // attempt to determine if the device at the given address is connected to the bus
-    // also allows for updating the read scratchpad
-    bool isConnected(const uint8_t*, uint8_t*);
-
     // get global resolution
-    uint8_t getResolution();
-
-    // returns the device resolution: 9, 10, 11, or 12 bits
-    uint8_t getResolution(const uint8_t*);
+    uint8_t resolution();
 
     // set resolution of a device to 9, 10, 11, or 12 bits
-    bool setResolution(uint8_t newResolution);
-
-    // write device's scratchpad
-    void writeScratchPad(const uint8_t*, const uint8_t*);
-
-    // read device's scratchpad
-    void readScratchPad(const uint8_t*, uint8_t*);
-
-    // read device's power requirements
-    bool readPowerSupply(const uint8_t*);
+    bool resolution(uint8_t iResolution);
 
     // returns true if the bus requires parasite power
-    bool isParasitePowerMode(void);
-
-    // returns true if send-Mode = "Wertänderung" 
-    bool  isSend_Temp(void);
-    // returns true if "Wertänderung" detected
-    bool  doSend_Temp(void); 
-    void  clearSend_Temp(void); 
-
-    // get Alram is set
-    bool getAlarm1();
-    bool getAlarm1_HT();
-    bool getAlarm1_TT();
-    bool getAlarm2();
-    bool getAlarm2_HT();
-    bool getAlarm2_TT();
+    bool isParasitePowerMode();
 
   private:
-
-    // initialise bus
-    void begin();
-    uint8_t end();
-
-
-    OneWireDS2482 *_ow;
-    uint8_t *_address_DS18B20;
-
-    uint8_t bitResolution;
     typedef uint8_t ScratchPad[9];
-    bool parasite;
-    bool _isActive = false;
-    bool is_diff_T_active = false;
-    bool temp_init = false;
-    bool _send_Temp = false;
 
-    uint8_t i;
-    uint8_t present = 0;
-    uint8_t type_s;
-    uint8_t data[12];
-    uint8_t addr_DS18B20[8];
-    float celsius, temp,temp_old, calValueT;
-    float _diff_T;
-    int16_t raw = 0;
-    int16_t raw_amp = 0;
+    ScratchPad mScratchPad;
 
-    //Alarm 1 & 2 
-    bool _alarm1 = false;
-    bool _isAlarm1_HT = false;
-    bool _isAlarm1_TT = false;
-    float _alarm1_HT;
-    float _alarm1_TT;
-    bool _alarm2 = false;
-    bool _isAlarm2_HT = false;
-    bool _isAlarm2_TT = false;
-    float _alarm2_HT;
-    float _alarm2_TT;
+    SensorState mState = Startup;
+    
+    bool mIsActive = false;
+    uint8_t mBitResolution;
+    bool mParasite;
+    float mTemp;
 
+    void loop() override;
+    bool startConversionTemp();
+    bool updateTemp();
+    // read device's scratchpad
+    void readScratchPad();
+    // write device's scratchpad
+    void writeScratchPad();
+    // read device's power requirements
+    bool readPowerSupply();
 };

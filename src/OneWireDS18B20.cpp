@@ -3,385 +3,222 @@
 #include <math.h>
 
 #include "OneWireDS2482.h"
-#include "OneWireDS18B20.h""
+#include "OneWireDS18B20.h"
 
-//#define DebugInfo
-//#define DebugInfoTemp
+#define DebugInfoTemp
 
+OneWireDS18B20::OneWireDS18B20(OneWireDS2482* iBM, uint8_t* iId)
+    : OneWire(iBM, iId)
+{}
 
-OneWireDS18B20::OneWireDS18B20()
-{
-  // Address is determined by two pins on the DS2482 AD1/AD0
-  // Pass 0b00, 0b01, 0b10 or 0b11
-  //mAddress = 0x18;
-  //mError = 0;
-  //Wire.begin();
-};
+void OneWireDS18B20::loop() {
 
-void OneWireDS18B20::init(OneWireDS2482 *ow, uint8_t *address_DS18B20, bool isactive, float diff_T, bool Alarm1, float Alarm1_HT, float Alarm1_TT, bool Alarm2, float Alarm2_HT, float Alarm2_TT ) {
-  _ow = ow;
-  _address_DS18B20 = address_DS18B20;
-  _isActive = isactive;
-
-  //alarm 1& 2
-  _alarm1 = Alarm1;
-  _alarm1_HT = Alarm1_HT;
-  _alarm1_TT = Alarm1_TT;
-  _alarm2 = Alarm2;
-  _alarm2_HT = Alarm2_HT;
-  _alarm2_TT = Alarm2_TT;
-
-  _diff_T = (diff_T / 10.0);
-  if (diff_T != 0)
-    is_diff_T_active = true;
-
-
-
-  if (!parasite && readPowerSupply(_address_DS18B20)) parasite = true;
-  bitResolution = max(bitResolution, getResolution(_address_DS18B20));
-}
-
-
-void OneWireDS18B20::setActive(bool state) {
-  _isActive = state;
-}
-
-bool OneWireDS18B20::getisActive() {
-  return _isActive;
-}
-
-
-float OneWireDS18B20::getTemp() {
-  return temp - calValueT;
-}
-
-bool  OneWireDS18B20::isSend_Temp() {
-  return is_diff_T_active;
-}
-
-
-bool  OneWireDS18B20::doSend_Temp() {
-  return _send_Temp;
-}
-
-void  OneWireDS18B20::clearSend_Temp() {
-  _send_Temp = false;
-}
-
-bool OneWireDS18B20::getAlarm1() {
-  return _alarm1;
-}
-
-bool OneWireDS18B20::getAlarm2() {
-  return _alarm2;
-}
-
-bool OneWireDS18B20::getAlarm1_HT() {
-  return _isAlarm1_HT;
-}
-
-bool OneWireDS18B20::getAlarm1_TT() {
-  return _isAlarm1_TT;
-}
-
-bool OneWireDS18B20::getAlarm2_HT() {
-  return _isAlarm2_HT;
-}
-
-bool OneWireDS18B20::getAlarm2_TT() {
-  return _isAlarm2_TT;
-}
-
-boolean OneWireDS18B20::startConversion_Temp() {
-
-  _ow->wireReset();
-  _ow->wireSelect(_address_DS18B20);
-  _ow->wireWriteByte(0x44, 1);        // Wandlung mit aktivierter parasitärer Versorgung starten
-  return true;
-}
-
-
-
-boolean OneWireDS18B20::update_Temp() {
-
-  present =  _ow->wireReset();
-  _ow->wireSelect(_address_DS18B20);
-
-  _ow->wireWriteByte(0xBE);         // Scratchpad auslesen
-#ifdef DebugInfoTemp
-  Debug.print(F("Data = %d"), present);
-  Debug.println(" ");
-#endif
-
-  for ( i = 0; i < 9; i++) {           // Wir brauchen 9 Byte
-    data[i] =  _ow->wireReadByte();
-#ifdef DebugInfoTemp
-    Debug.print(F("%02x "), data[i]);
-
-#endif
-  }
-#ifdef DebugInfoTemp
-  Debug.println(" ");
-  Debug.print("CRC = ");
-  Debug.println(F("%02x"), DS2482_OneWire::crc8(data, 8));
-#endif
-  byte cfg = (data[4] & 0x60);
-#ifdef DebugInfoTemp
-  Debug.print("cfg = ");
-  Debug.println(F("%02x"), cfg);
-
-#endif
-  raw = (data[1] << 8) | data[0];
-
-  if (cfg == 0x00) raw = raw & ~7;      // 9 bit resolution, 93.75 ms
-  else if (cfg == 0x20) raw = raw & ~3; // 10 bit res, 187.5 ms
-  else if (cfg == 0x40) raw = raw & ~1; // 11 bit res, 375 ms
-  else if (cfg == 0x60) raw = raw;      // 12 bit res, 750 ms
-
-
-
-  //speichert ersten Wert in OLD um später damit den aktuellen Wert vergleichen zu können.
-  if (temp_init == false) {
-    temp_old = (float)raw / 16.0;
-    temp = temp_old;
-    temp_init = true;
-  }
-  else {
-    temp = (float)raw / 16.0;
-    //Wertänderung
-    if (is_diff_T_active) {
-      if (abs(temp - temp_old)  > _diff_T) {
-        _send_Temp = true;
-      }
-      temp_old = temp;
+    switch (mState)
+    {
+    case Startup:
+        init(true);
+        mState = Idle;
+        break;
+    case StartMeasurement:
+        mState = startConversionTemp() ? GetMeasure : Error;
+        pDelay = millis();
+        break;
+    case GetMeasure:
+        if (delayCheck(pDelay, 750)) {
+            mState = updateTemp() ? Idle : Error;
+            pDelay = millis();
+        }
+        break;
+    case Idle:
+        if (delayCheck(pDelay, 2000)) {
+            mState = StartMeasurement;
+            pDelay = millis();
+        }
+        break;
+    default:
+        // error case
+        mState = Error;
+        break;
     }
-    //Alarm
-    if (temp >= _alarm1_HT)
-      _isAlarm1_HT = true;
-    else
-      _isAlarm1_HT = false;
-    if (temp <= _alarm1_TT)
-      _isAlarm1_TT = true;
-    else
-      _isAlarm1_TT = false;
+}
 
-    if (temp >= _alarm2_HT)
-      _isAlarm2_HT = true;
-    else
-      _isAlarm2_HT = false;
-    if (temp <= _alarm2_TT)
-      _isAlarm2_TT = true;
-    else
-      _isAlarm2_TT = false;
-  }
+void OneWireDS18B20::init(bool iIsactive)
+{
+    mIsActive = iIsactive;
 
+    if (!mParasite && readPowerSupply())
+        mParasite = true;
+    mBitResolution = max(mBitResolution, resolution());
+}
 
-#ifdef DebugInfoTemp
-  Debug.println(F("Temp = %0.1f°C"), temp);
-#endif
+void OneWireDS18B20::isActive(bool iState)
+{
+    mIsActive = iState;
+}
+
+bool OneWireDS18B20::isActive()
+{
+    return mIsActive;
+}
+
+float OneWireDS18B20::getTemp()
+{
+    return mTemp;
+}
+
+bool OneWireDS18B20::startConversionTemp()
+{
+    pBM->wireReset();
+    pBM->wireSelect(pId);
+    pBM->wireWriteByte(STARTCONVO, 1); // Wandlung mit aktivierter parasitärer Versorgung starten
+    return true;
+}
+
+bool OneWireDS18B20::updateTemp()
+{
+//     pBM->wireReset();
+//     pBM->wireSelect(pId);
+//     pBM->wireWriteByte(0xBE); // Scratchpad auslesen
+// #ifdef DebugInfoTemp
+//     printDebug(F("lScratchPad = %d"), present);
+//     printDebugln(" ");
+// #endif
+//     ScratchPad lScratchPad;
+//     for (uint8_t i = 0; i < 9; i++)
+//     { // Wir brauchen 9 Byte
+//         lScratchPad[i] = pBM->wireReadByte();
+// #ifdef DebugInfoTemp
+//         printDebug(F("%02x "), lScratchPad[i]);
+// #endif
+//     }
+// #ifdef DebugInfoTemp
+//     printDebugln(" ");
+//     printDebug("CRC = ");
+//     printDebugln(F("%02x"), DS2482_OneWire::crc8(lScratchPad, 8));
+// #endif
+//     byte lConfig = (lScratchPad[4] & 0x60);
+// #ifdef DebugInfoTemp
+//     printDebug("lConfig = ");
+//     printDebugln(F("%02x"), lConfig);
+// #endif
+    uint8_t lResolution = resolution();
+    uint16_t lTempRaw = (mScratchPad[1] << 8) | mScratchPad[0];
+
+    if (lResolution) {
+        uint16_t lShift = 0xFF << abs(lResolution - 12);
+        lTempRaw &= lShift;
+        mTemp = (float)lTempRaw / 16.0;
+    #ifdef DebugInfoTemp
+        printDebug("Temp = %0.1f°C\n", mTemp);
+    #endif
+        return true;
+    } else {
+        return false;
+    }
 }
 
 // reads the device's power requirements
-bool OneWireDS18B20::readPowerSupply(const uint8_t* deviceAddress)
+bool OneWireDS18B20::readPowerSupply()
 {
-  bool ret = false;
-  _ow->wireReset();
-  _ow->wireSelect(deviceAddress);
-  _ow->wireWriteByte(READPOWERSUPPLY);
-  if (_ow->wireReadBit() == 0) ret = true;
-  _ow->wireReset();
-  return ret;
+    pBM->wireReset();
+    bool lResult = false;
+    pBM->wireSelect(pId);
+    pBM->wireWriteByte(READPOWERSUPPLY);
+    if (pBM->wireReadBit() == 0)
+        lResult = true;
+    pBM->wireReset();
+    return lResult;
 }
-
 
 // returns true if the bus requires parasite power
-bool OneWireDS18B20::isParasitePowerMode(void)
+bool OneWireDS18B20::isParasitePowerMode()
 {
-  return parasite;
+    return mParasite;
 }
-
 
 // attempt to determine if the device at the given address is connected to the bus
 bool OneWireDS18B20::isConnected()
 {
-  ScratchPad scratchPad;
-  return isConnected(_address_DS18B20, scratchPad);
+    readScratchPad();
+    return (pBM->crc8(mScratchPad, 8) == mScratchPad[SCRATCHPAD_CRC]);
 }
-
-
-// attempt to determine if the device at the given address is connected to the bus
-bool OneWireDS18B20::isConnected(const uint8_t* deviceAddress)
-{
-  ScratchPad scratchPad;
-  return isConnected(deviceAddress, scratchPad);
-}
-
-// attempt to determine if the device at the given address is connected to the bus
-// also allows for updating the read scratchpad
-bool OneWireDS18B20::isConnected(const uint8_t* deviceAddress, uint8_t* scratchPad)
-{
-  readScratchPad(deviceAddress, scratchPad);
-  return (_ow->crc8(scratchPad, 8) == scratchPad[SCRATCHPAD_CRC]);
-}
-
 
 // returns the global resolution
-uint8_t OneWireDS18B20::getResolution()
+uint8_t OneWireDS18B20::resolution()
 {
-  getResolution(_address_DS18B20);
-}
-
-
-// returns the current resolution of the device, 9-12
-// returns 0 if device not found
-uint8_t OneWireDS18B20::getResolution(const uint8_t* deviceAddress)
-{
-  // this model has a fixed resolution of 9 bits but getTemp calculates
-  // a full 12 bits resolution and we need 750ms convert time
-  if (deviceAddress[0] == DS18S20MODEL) return 12;
-
-  ScratchPad scratchPad;
-  if (isConnected(deviceAddress, scratchPad))
-  {
-    switch (scratchPad[CONFIGURATION])
+    // this model has a fixed resolution of 9 bits but getTemp calculates
+    // a full 12 bits resolution and we need 750ms convert time
+    if (isConnected())
     {
-      case TEMP_12_BIT:
-        return 12;
-
-      case TEMP_11_BIT:
-        return 11;
-
-      case TEMP_10_BIT:
-        return 10;
-
-      case TEMP_9_BIT:
-        return 9;
+        // returned values are 9-12
+        return (pId[0] == DS18S20MODEL) ? 9 : ((mScratchPad[CONFIGURATION] >> 5) & 3) + 9;
     }
-  }
-  return 0;
+    return 0;
 }
-
-
 
 // set resolution of all devices to 9, 10, 11, or 12 bits
 // if new resolution is out of range, it is constrained.
-bool OneWireDS18B20::setResolution(uint8_t newResolution)
+bool OneWireDS18B20::resolution(uint8_t iResolution)
 {
-  bitResolution = constrain(newResolution, 9, 12);
+    mBitResolution = constrain(iResolution, 9, 12);
 
-  ScratchPad scratchPad;
-  if (isConnected(_address_DS18B20, scratchPad))
-  {
-
-    // DS18S20 has a fixed 9-bit resolution
-    if (_address_DS18B20[0] != DS18S20MODEL)
+    if (isConnected())
     {
-
-      switch (bitResolution)
-      {
-        case 12:
-          scratchPad[CONFIGURATION] = TEMP_12_BIT;
-          break;
-        case 11:
-          scratchPad[CONFIGURATION] = TEMP_11_BIT;
-          break;
-        case 10:
-          scratchPad[CONFIGURATION] = TEMP_10_BIT;
-          break;
-        case 9:
-        default:
-          scratchPad[CONFIGURATION] = TEMP_9_BIT;
-          break;
-      }
-      writeScratchPad(_address_DS18B20, scratchPad);
+        // DS18S20 has a fixed 9-bit resolution
+        if (pId[0] != DS18S20MODEL)
+        {
+            mScratchPad[CONFIGURATION] = ((mBitResolution - 9) << 5) | 0x0F;
+            writeScratchPad();
+        }
+        return true; // new value set
     }
-    return true;  // new value set
-  }
-  return false;
+    return false;
 }
 
-
 // writes device's scratch pad
-void OneWireDS18B20::writeScratchPad(const uint8_t* deviceAddress, const uint8_t* scratchPad)
+void OneWireDS18B20::writeScratchPad()
 {
-  _ow->wireReset();
-  _ow->wireSelect(deviceAddress);
-  _ow->wireWriteByte(WRITESCRATCH);
-  _ow->wireWriteByte(scratchPad[HIGH_ALARM_TEMP]); // high alarm temp
-  _ow->wireWriteByte(scratchPad[LOW_ALARM_TEMP]); // low alarm temp
-  // DS18S20 does not use the configuration register
-  if (deviceAddress[0] != DS18S20MODEL) _ow->wireWriteByte(scratchPad[CONFIGURATION]); // configuration
-  _ow->wireReset();
-  // save the newly written values to eeprom
-  _ow->wireWriteByte(COPYSCRATCH, parasite);
-  if (parasite) delay(10); // 10ms delay
-  _ow->wireReset();
+    pBM->wireReset();
+    pBM->wireSelect(pId);
+    pBM->wireWriteByte(WRITESCRATCH);
+    pBM->wireWriteByte(mScratchPad[HIGH_ALARM_TEMP]); // high alarm temp
+    pBM->wireWriteByte(mScratchPad[LOW_ALARM_TEMP]);  // low alarm temp
+    // DS18S20 does not use the configuration register
+    if (pId[0] != DS18S20MODEL)
+        pBM->wireWriteByte(mScratchPad[CONFIGURATION]); // configuration
+    pBM->wireReset();
+    // save the newly written values to eeprom
+    pBM->wireWriteByte(COPYSCRATCH, mParasite);
+    if (mParasite)
+        delay(10); // 10ms delay
+    pBM->wireReset();
 }
 
 // read device's scratch pad
-void OneWireDS18B20::readScratchPad(const uint8_t* deviceAddress, uint8_t* scratchPad)
+void OneWireDS18B20::readScratchPad()
 {
-  // send the command
-  _ow->wireReset();
-  _ow->wireSelect(_address_DS18B20);
-  _ow->wireWriteByte(READSCRATCH);      // 0xBE  // Read EEPROM
+    // send the command
+    pBM->wireReset();
+    pBM->wireSelect(pId);
+    pBM->wireWriteByte(READSCRATCH); // 0xBE  // Read EEPROM
 
-  // TODO => collect all comments &  use simple loop
-  // byte 0: temperature LSB
-  // byte 1: temperature MSB
-  // byte 2: high alarm temp
-  // byte 3: low alarm temp
-  // byte 4: DS18S20: store for crc
-  //         DS18B20 & DS1822: configuration register
-  // byte 5: internal use & crc
-  // byte 6: DS18S20: COUNT_REMAIN
-  //         DS18B20 & DS1822: store for crc
-  // byte 7: DS18S20: COUNT_PER_C
-  //         DS18B20 & DS1822: store for crc
-  // byte 8: SCRATCHPAD_CRC
-  //
-  // for(int i=0; i<9; i++)
-  // {
-  //   scratchPad[i] = _wire->read();
-  // }
-
-
-  // read the response
-
-  // byte 0: temperature LSB
-  scratchPad[TEMP_LSB] = _ow->wireReadByte();
-
-  // byte 1: temperature MSB
-  scratchPad[TEMP_MSB] = _ow->wireReadByte();
-
-  // byte 2: high alarm temp
-  scratchPad[HIGH_ALARM_TEMP] = _ow->wireReadByte();
-
-  // byte 3: low alarm temp
-  scratchPad[LOW_ALARM_TEMP] = _ow->wireReadByte();
-
-  // byte 4:
-  // DS18S20: store for crc
-  // DS18B20 & DS1822: configuration register
-  scratchPad[CONFIGURATION] = _ow->wireReadByte();
-
-  // byte 5:
-  // internal use & crc
-  scratchPad[INTERNAL_BYTE] = _ow->wireReadByte();
-
-  // byte 6:
-  // DS18S20: COUNT_REMAIN
-  // DS18B20 & DS1822: store for crc
-  scratchPad[COUNT_REMAIN] = _ow->wireReadByte();
-
-  // byte 7:
-  // DS18S20: COUNT_PER_C
-  // DS18B20 & DS1822: store for crc
-  scratchPad[COUNT_PER_C] = _ow->wireReadByte();
-
-  // byte 8:
-  // SCTRACHPAD_CRC
-  scratchPad[SCRATCHPAD_CRC] = _ow->wireReadByte();
-
-  _ow->wireReset();
+    // TODO => collect all comments &  use simple loop
+    // byte 0: temperature LSB
+    // byte 1: temperature MSB
+    // byte 2: high alarm temp
+    // byte 3: low alarm temp
+    // byte 4: DS18S20: store for crc
+    //         DS18B20 & DS1822: configuration register
+    // byte 5: internal use & crc
+    // byte 6: DS18S20: COUNT_REMAIN
+    //         DS18B20 & DS1822: store for crc
+    // byte 7: DS18S20: COUNT_PER_C
+    //         DS18B20 & DS1822: store for crc
+    // byte 8: SCRATCHPAD_CRC
+    //
+    for(uint8_t i=0; i<9; i++)
+    {
+        mScratchPad[i] = pBM->wireReadByte();
+    }
+    pBM->wireReset();
 }

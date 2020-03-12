@@ -1,26 +1,40 @@
 #include <Wire.h>
 #include <arduino.h>
+#include "Hardware.h"
 #include "OneWireDS2482.h"
 
 // Constructor with no parameters for compatability with OneWire lib
 OneWireDS2482::OneWireDS2482()
 {
-	// Address is determined by two pins on the DS2482 AD1/AD0
-	// Pass 0b00, 0b01, 0b10 or 0b11
-	mAddress = 0x18;
-	mError = 0;
-	//Wire.begin();
+    mAddress = I2C_1WIRE_DEVICE_ADDRESSS;
+    mError = 0;
 }
 
 OneWireDS2482::OneWireDS2482(uint8_t address)
 {
 	// Address is determined by two pins on the DS2482 AD1/AD0
 	// Pass 0b00, 0b01, 0b10 or 0b11
-	mAddress = 0x18 | address;
+	mAddress = I2C_1WIRE_DEVICE_ADDRESSS | address;
 	mError = 0;
-	//Wire.begin();
 }
 
+void OneWireDS2482::setup()
+{
+    deviceReset();
+    setActivePullup();
+    // setStrongPullup();
+
+    uint8_t lAddress[8];
+
+    wireResetSearch();
+    wireSearch(lAddress);
+}
+
+void OneWireDS2482::loop()
+{
+}
+
+// Just for the DS2482-800
 bool OneWireDS2482::selectChannel(uint8_t channel)
 {
 	uint8_t ch, ch_read;
