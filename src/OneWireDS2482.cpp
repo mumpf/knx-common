@@ -1,37 +1,176 @@
 #include <Wire.h>
-#include <arduino.h>
+#include <Arduino.h>
+#include "Helper.h"
 #include "Hardware.h"
 #include "OneWireDS2482.h"
+#include "OneWireDS18B20.h"
+#include "OneWireDS1990.h"
+#include "OneWireDS2408.h"
+#include "OneWireDS2413.h"
 
 // Constructor with no parameters for compatability with OneWire lib
-OneWireDS2482::OneWireDS2482()
+OneWireDS2482::OneWireDS2482(foundNewId iNewIdCallback)
 {
-    mAddress = I2C_1WIRE_DEVICE_ADDRESSS;
+    mI2cAddress = I2C_1WIRE_DEVICE_ADDRESSS;
+    fNewIdCallback = iNewIdCallback;
     mError = 0;
 }
 
-OneWireDS2482::OneWireDS2482(uint8_t address)
+OneWireDS2482::OneWireDS2482(uint8_t iI2cAddressOffset, foundNewId iNewIdCallback)
 {
 	// Address is determined by two pins on the DS2482 AD1/AD0
 	// Pass 0b00, 0b01, 0b10 or 0b11
-	mAddress = I2C_1WIRE_DEVICE_ADDRESSS | address;
-	mError = 0;
+    mI2cAddress = I2C_1WIRE_DEVICE_ADDRESSS | iI2cAddressOffset;
+    fNewIdCallback = iNewIdCallback;
+    mError = 0;
 }
 
 void OneWireDS2482::setup()
 {
     deviceReset();
     setActivePullup();
-    // setStrongPullup();
+    setStrongPullup();
 
-    uint8_t lAddress[8];
+    mState = Init;
+    // uint8_t lAddress[8];
 
-    wireResetSearch();
-    wireSearch(lAddress);
+    // uint32_t lMaxDelay = 0;
+    // uint32_t lDuration = millis();
+    // uint32_t lCurrentDelay = millis();
+    // uint16_t lCounter = 0;
+    // while (mState != Error)
+    // {
+    //     lCurrentDelay = millis();
+    //     loop();
+    //     uint32_t lDelta = millis() - lCurrentDelay;
+    //     printDebug("Delta #%d: %d\n", lCounter++, lDelta);
+    //     lMaxDelay = max(lMaxDelay, lDelta);
+    // };
+	// for (uint8_t i = 0; i < mIdCount; i++)
+	// {
+	//     printDebug("ID: %02X.%02X%02X%02X%02X%02X%02X %02X == CRC %02X?\n", mIds[i][0], mIds[i][1], mIds[i][2], mIds[i][3], mIds[i][4], mIds[i][5], mIds[i][6], mIds[i][7], crc8(mIds[i], 7));
+	// }
+    // printDebug("Finished search, took %d ms, max blocking was %d ms\n", millis() - lDuration, lMaxDelay);
+    // printDebug("Test finished\n");
 }
 
 void OneWireDS2482::loop()
 {
+    switch (mState)
+	{
+        case Init:
+            mStateSearch = SearchNew;
+            mState = Startup;
+            break;
+        case Startup:
+			// at startup we do an initial search to find all supported sensors
+            if (wireSearchLoop())
+            {
+                // search is finished, we have to find out if successful
+                mState = (mStateSearch == SearchFinished) ? PriorityBusUse : Error;
+            }
+            mDelay = millis();
+            break;
+		case Search:
+            if (wireSearchLoop()) {
+				// search is finished, we have to find out if successful
+                mState = (mStateSearch == SearchFinished) ? PriorityBusUse : Error;
+            }
+            mDelay = millis();
+            break;
+        case PriorityBusUse:
+            mState = NormalBusUse;
+            break;
+        case NormalBusUse:
+			if (ProcessNormalBusUse()) {
+            	mState = Idle;
+            } 
+            break;
+        case Idle:
+            mState = Search;
+            mStateSearch = SearchNew;
+            mDelay = millis();
+            break;
+        default:
+		    // we wait a Moment and afterwards start over
+            mState = delayCheck(mDelay, 100) ? Idle : Error;
+            break;
+	}
+}
+
+// returns false while the method iterates thrugh sensor list, true if finished the list
+bool OneWireDS2482::ProcessNormalBusUse()
+{
+    static int8_t sSensorIndex = 0;
+	if (sSensorIndex >= mSensorCount)
+        return true; // no sensors available or wrong sensor index
+    OneWire *lSensor = mSensor[sSensorIndex++];
+    if (lSensor->Id()[0] == MODEL_DS18B20  && lSensor->Mode() == OneWire::Known) {
+        lSensor->loop();
+    }
+	if (sSensorIndex >= mSensorCount)
+        sSensorIndex = 0;
+    return (sSensorIndex == 0);
+}
+
+// Factory method, creates OneWireSensors just in case, they do not exist
+// for new OneWireSensors also a callback is issued to the host
+OneWire *OneWireDS2482::CreateOneWire(tIdRef iId) {
+    OneWire *lSensor = NULL;
+
+    // check if Sensor exists
+	for (uint8_t i = 0; i < mSensorCount; i++)
+	{
+		if (equalId(mSensor[i]->Id(), iId)) {
+            lSensor = mSensor[i];
+            break;
+        }
+	}
+	if (lSensor == NULL) {
+		// this is a new sensor
+		switch (iId[0]) 
+		{
+		case MODEL_DS18B20:
+        case MODEL_DS18S20:
+            lSensor = (new OneWireDS18B20(this, iId));
+            break;
+        case MODEL_DS1990:
+            lSensor = (new OneWireDS1990(this, iId));
+            break;
+        case MODEL_DS2408:
+            lSensor = (new OneWireDS2408(this, iId));
+            break;
+        case MODEL_DS2413:
+            lSensor = (new OneWireDS2413(this, iId));
+            break;
+        case MODEL_DS2436:
+            lSensor = (new OneWireDS18B20(this, iId));
+            break;
+        default:
+            printHEX("Unsupported family found: ", iId, 7);
+            // sensor family not supported
+            break;
+        }
+		if (lSensor != NULL) {
+			if (fNewIdCallback != 0)
+				fNewIdCallback(lSensor);
+			mSensor[mSensorCount++] = lSensor;
+			if (mSensorCount == 30)
+				mSensorCount--;
+        }
+	}
+    return lSensor;
+}
+
+OneWire *OneWireDS2482::Sensor(uint8_t iIndex){
+    if (iIndex < mSensorCount)
+        return mSensor[iIndex];
+	else
+        return NULL;
+}
+
+uint8_t OneWireDS2482::SensorCount() {
+    return mSensorCount;
 }
 
 // Just for the DS2482-800
@@ -88,9 +227,9 @@ bool OneWireDS2482::selectChannel(uint8_t channel)
 	return check == ch_read;
 }
 
-uint8_t OneWireDS2482::getAddress()
+uint8_t OneWireDS2482::getI2cAddress()
 {
-	return mAddress;
+    return mI2cAddress;
 }
 
 uint8_t OneWireDS2482::getError()
@@ -101,7 +240,7 @@ uint8_t OneWireDS2482::getError()
 // Helper functions to make dealing with I2C side easier
 void OneWireDS2482::begin()
 {
-	Wire.beginTransmission(mAddress);
+	Wire.beginTransmission(mI2cAddress);
 }
 
 uint8_t OneWireDS2482::end()
@@ -116,13 +255,13 @@ void OneWireDS2482::writeByte(uint8_t data)
 
 uint8_t OneWireDS2482::readByte()
 {
-	Wire.requestFrom(mAddress,1u);
+	Wire.requestFrom(mI2cAddress,1u);
 	return Wire.read();
 }
 
 // Simply starts and ends an Wire transmission
 // If no devices are present, this returns false
-uint8_t OneWireDS2482::checkPresence()
+uint8_t OneWireDS2482::checkI2cPresence()
 {
 	begin();
 	return !end() ? true : false;
@@ -146,9 +285,9 @@ void OneWireDS2482::setReadPointer(uint8_t readPointer)
 }
 
 // Read the status register
-uint8_t OneWireDS2482::readStatus()
+uint8_t OneWireDS2482::readStatus(bool iSetReadPointer)
 {
-	setReadPointer(DS2482_POINTER_STATUS);
+	if (iSetReadPointer) setReadPointer(DS2482_POINTER_STATUS);
 	return readByte();
 }
 
@@ -195,13 +334,13 @@ void OneWireDS2482::clearActivePullup()
 }
 
 // Churn until the busy bit in the status register is clear
-uint8_t OneWireDS2482::waitOnBusy()
+uint8_t OneWireDS2482::waitOnBusy(bool iSetReadPointer)
 {
 	uint8_t status;
 
 	for(int i=1000; i>0; i--)
 	{
-		status = readStatus();
+		status = readStatus(iSetReadPointer);;
 		if (!(status & DS2482_STATUS_BUSY))
 			break;
 		delayMicroseconds(20);
@@ -239,7 +378,7 @@ uint8_t OneWireDS2482::wireReset()
 	// Datasheet warns that reset with SPU set can exceed max ratings
 	clearStrongPullup();
 
-	waitOnBusy();
+	waitOnBusy(false);
 
 	begin();
 	writeByte(DS2482_COMMAND_RESETWIRE);
@@ -250,7 +389,9 @@ uint8_t OneWireDS2482::wireReset()
 	if (status & DS2482_STATUS_SD)
 	{
 		mError = DS2482_ERROR_SHORT;
-	}
+	} else {
+        setActivePullup();
+    }
 
 	return (status & DS2482_STATUS_PPD) ? true : false;
 }
@@ -261,7 +402,7 @@ void OneWireDS2482::wireWriteByte(uint8_t data, uint8_t power)
 	waitOnBusy();
 	if (power)
 		setStrongPullup();
-    setActivePullup();
+    // setActivePullup();
 	begin();
 	writeByte(DS2482_COMMAND_WRITEBYTE);
 	writeByte(data);
@@ -275,7 +416,7 @@ uint8_t OneWireDS2482::wireReadByte()
 	begin();
 	writeByte(DS2482_COMMAND_READBYTE);
 	end();
-	waitOnBusy();
+	waitOnBusy(false);
 	return readData();
 }
 
@@ -288,7 +429,7 @@ void OneWireDS2482::wireWriteBit(uint8_t data, uint8_t power)
 	waitOnBusy();
 	if (power)
 		setStrongPullup();
-    setActivePullup();
+    // setActivePullup();
 	begin();
 	writeByte(DS2482_COMMAND_SINGLEBIT);
 	writeByte(data ? 0x80 : 0x00);
@@ -309,33 +450,182 @@ void OneWireDS2482::wireSkip()
 	wireWriteByte(WIRE_COMMAND_SKIP);
 }
 
-void OneWireDS2482::wireSelect(const uint8_t rom[8])
+void OneWireDS2482::wireSelect(const tIdRef iId)
 {
 	wireWriteByte(WIRE_COMMAND_SELECT);
-	for (int i=0;i<8;i++)
-		wireWriteByte(rom[i]);
+	for (int i=0;i<7;i++)
+		wireWriteByte(iId[i]);
+    wireWriteByte(crc8(iId, 7));
 }
 
-//  1-Wire reset seatch algorithm
-void OneWireDS2482::wireResetSearch()
+uint32_t gDuration = 0;
+uint32_t gDurationOld = 0;
+uint32_t gDelay = 0;
+uint32_t gMaxDelay = 0;
+
+// async search, max blocking time 4 ms
+bool OneWireDS2482::wireSearchLoop()
 {
-	searchLastDiscrepancy = 0;
-	searchLastDeviceFlag = 0;
+    uint8_t lStatus = 0;
+    bool lResult = false;
+    uint32_t lDuration = 0;
 
-	for (int i = 0; i < 8; i++)
-	{
-		searchAddress[i] = 0;
-	}
-
+    gDelay = millis();
+    switch (mStateSearch)
+    {
+		case SearchNew:
+			// DEBUG: Time measurement
+			gDuration = millis();
+            gMaxDelay = 0;
+            wireSearchNew();
+            mStateSearch = SearchReset;
+            break;
+        case SearchReset:
+            wireSearchReset();
+            mStateSearch = SearchStart;
+            break;
+        case SearchStart:
+            lStatus = readStatus(false);
+            if (!(lStatus & DS2482_STATUS_BUSY))
+            {
+                mStateSearch = wireSearchStart(lStatus) ? SearchStep : SearchError;
+                mDelay = millis();
+            }
+            else if (delayCheck(mDelay, 1000))
+            {
+                mStateSearch = SearchError;
+            }
+            break;
+        case SearchStep:
+            if (wireSearchStep(mSearchStep))
+            {
+                mSearchStep += 1;
+                if (mSearchStep == 64)
+                    mStateSearch = SearchEnd;
+            }
+            else
+            {
+                mStateSearch = SearchError;
+            };
+            mDelay = millis();
+            break;
+        case SearchEnd:
+            CreateOneWire(mSearchAddress);
+            mStateSearch = wireSearchEnd() ? SearchFinished : SearchReset;
+            mDelay = millis();
+            break;
+        case SearchFinished:
+            lResult = true;
+            gMaxDelay = max(gMaxDelay, millis() - gDelay);
+            lDuration = millis() - gDuration;
+			if (abs(gDurationOld - lDuration) > 5) { 
+				// print only if there is a big difference between cycles
+                printDebug("Finished search, took %d ms, max blocking was %d ms\n", lDuration, gMaxDelay);
+                gDurationOld = lDuration;
+            }
+            break;
+        default:
+            mStateSearch = SearchError;
+            lResult = true;
+            break;
+    }
+    gMaxDelay = max(gMaxDelay, millis() - gDelay);
+    return lResult;
 }
 
+
+//  1-Wire reset search algorithm
+void OneWireDS2482::wireSearchNew()
+{
+    // reset search fields
+	mSearchLastDiscrepancy = 0;
+	mSearchLastDeviceFlag = 0;
+
+	// clear search buffer
+    for (uint8_t i = 0; i < 8; i++)
+		mSearchAddress[i] = 0;
+    // reset bus (see wireReset) in non blocking way
+    waitOnBusy();
+    // Datasheet warns that reset with SPU set can exceed max ratings
+    clearStrongPullup();
+}
+
+void OneWireDS2482::wireSearchReset() {
+    waitOnBusy();
+    begin();
+    writeByte(DS2482_COMMAND_RESETWIRE);
+    end();
+}
+
+bool OneWireDS2482::wireSearchStart(uint8_t iStatus)
+{
+    mSearchStep = 0;
+    mSearchLastZero = 0;
+    if (mSearchLastDeviceFlag)
+        return false;
+    // if (!wireReset())
+    //     return false;
+    if (iStatus & DS2482_STATUS_SD)
+    {
+        mError = DS2482_ERROR_SHORT;
+    }
+
+    if (!(iStatus & DS2482_STATUS_PPD)) return false;
+    waitOnBusy(false);
+    wireWriteByte(WIRE_COMMAND_SEARCH);
+    waitOnBusy(false);
+	return true;
+}
+
+bool OneWireDS2482::wireSearchStep(uint8_t iStep) {
+    uint8_t lDirection;
+    
+	int lSearchByte = iStep / 8;
+    int lSearchBit = 1 << iStep % 8;
+
+    if (iStep < mSearchLastDiscrepancy)
+        lDirection = mSearchAddress[lSearchByte] & lSearchBit;
+    else
+        lDirection = (iStep == mSearchLastDiscrepancy);
+
+    begin();
+    writeByte(DS2482_COMMAND_TRIPLET);
+    writeByte(lDirection ? 0x80 : 0x00);
+    end();
+
+    uint8_t lStatus = waitOnBusy(false);
+    uint8_t lId = lStatus & DS2482_STATUS_SBR;
+    uint8_t lCompId = lStatus & DS2482_STATUS_TSB;
+    lDirection = lStatus & DS2482_STATUS_DIR;
+
+    if (lId && lCompId)
+        return false;
+    else if (!lId && !lCompId && !lDirection)
+        mSearchLastZero = iStep;
+
+    if (lDirection)
+        mSearchAddress[lSearchByte] |= lSearchBit;
+    else
+        mSearchAddress[lSearchByte] &= ~lSearchBit;
+    return true;
+}
+
+bool OneWireDS2482::wireSearchEnd()
+{
+    mSearchLastDiscrepancy = mSearchLastZero;
+    if (!mSearchLastZero)
+        mSearchLastDeviceFlag = 1;
+    return mSearchLastDeviceFlag;
+}
+
+// Sync search, takes 91 ms per sensor!!!!
 // Perform a search of the 1-Wire bus
-uint8_t OneWireDS2482::wireSearch(uint8_t *address)
+uint8_t OneWireDS2482::wireSearch(tIdRef eAddress)
 {
-	uint8_t direction;
-	uint8_t last_zero=0;
+	uint8_t lDirection;
+	uint8_t lLastZero=0;
 
-	if (searchLastDeviceFlag)
+	if (mSearchLastDeviceFlag)
 		return 0;
 
 	if (!wireReset())
@@ -345,55 +635,45 @@ uint8_t OneWireDS2482::wireSearch(uint8_t *address)
 
 	wireWriteByte(WIRE_COMMAND_SEARCH);
 
-	for(uint8_t i=0;i<64;i++)
+	waitOnBusy();
+	for(uint8_t i = 0; i < 64; i++)
 	{
-		int searchByte = i / 8; 
-		int searchBit = 1 << i % 8;
+		int lSearchByte = i / 8; 
+		int lSearchBit = 1 << i % 8;
 
-		if (i < searchLastDiscrepancy)
-			direction = searchAddress[searchByte] & searchBit;
+		if (i < mSearchLastDiscrepancy)
+			lDirection = mSearchAddress[lSearchByte] & lSearchBit;
 		else
-			direction = i == searchLastDiscrepancy;
+			lDirection = (i == mSearchLastDiscrepancy);
 
-		waitOnBusy();
 		begin();
 		writeByte(DS2482_COMMAND_TRIPLET);
-		writeByte(direction ? 0x80 : 0x00);
+		writeByte(lDirection ? 0x80 : 0x00);
 		end();
 
-		uint8_t status = waitOnBusy();
+		uint8_t lStatus = waitOnBusy(false);
+		uint8_t lId = lStatus & DS2482_STATUS_SBR;
+		uint8_t lCompId = lStatus & DS2482_STATUS_TSB;
+		lDirection = lStatus & DS2482_STATUS_DIR;
 
-		uint8_t id = status & DS2482_STATUS_SBR;
-		uint8_t comp_id = status & DS2482_STATUS_TSB;
-		direction = status & DS2482_STATUS_DIR;
-
-		if (id && comp_id)
-		{
+		if (lId && lCompId)
 			return 0;
-		}
-		else
-		{
-			if (!id && !comp_id && !direction)
-			{
-				last_zero = i;
-			}
-		}
+		else if (!lId && !lCompId && !lDirection)
+			lLastZero = i;
 
-		if (direction)
-			searchAddress[searchByte] |= searchBit;
+		if (lDirection)
+			mSearchAddress[lSearchByte] |= lSearchBit;
 		else
-			searchAddress[searchByte] &= ~searchBit;
-
+			mSearchAddress[lSearchByte] &= ~lSearchBit;
 	}
-
-	searchLastDiscrepancy = last_zero;
-
-	if (!last_zero)
-		searchLastDeviceFlag = 1;
-
-	for (uint8_t i=0; i<8; i++)
-		address[i] = searchAddress[i];
-
+	mSearchLastDiscrepancy = lLastZero;
+	if (!lLastZero)
+		mSearchLastDeviceFlag = 1;
+	// found id is just valid if crc8 check is ok
+	if (mSearchAddress[7] != crc8(mSearchAddress, 7))
+        return 0;
+    for (uint8_t i = 0; i < 7; i++)
+		eAddress[i] = mSearchAddress[i];
 	return 1;
 }
 

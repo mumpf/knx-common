@@ -24,13 +24,7 @@
 //         DS18B20 & DS1822: store for crc
 // byte 8: SCRATCHPAD_CRC
 
-// Model IDs
-#define DS18S20MODEL 0x10
-#define DS18B20MODEL 0x28
-#define DS1822MODEL  0x22
-#define DS1825MODEL  0x3B
-
-// OneWire commands
+// Model commands
 #define STARTCONVO      0x44  // Tells device to take a temperature reading and put it on the scratchpad
 #define COPYSCRATCH     0x48  // Copy EEPROM
 #define READSCRATCH     0xBE  // Read EEPROM
@@ -56,19 +50,20 @@
 #define TEMP_11_BIT 0x5F // 11 bit
 #define TEMP_12_BIT 0x7F // 12 bit
 
-enum SensorState
+class OneWireDS18B20 : public OneWire
 {
-    Startup,
-    StartMeasurement,
-    GetMeasure,
-    Idle,
-    Error
-};
+    enum StateSensorTemp
+    {
+        Startup,
+        StartMeasurement,
+        GetMeasure,
+        Idle,
+        Error
+    };
 
-class OneWireDS18B20 : OneWire
-{
   public:
-    OneWireDS18B20(OneWireDS2482 *iBusMaster, uint8_t *iId);
+    OneWireDS18B20(OneWireDS2482 *iBusMaster, tIdRef iId);
+    
     void init( bool iIsActive );
 
     float getTemp();
@@ -93,8 +88,8 @@ class OneWireDS18B20 : OneWire
 
     ScratchPad mScratchPad;
 
-    SensorState mState = Startup;
-    
+    StateSensorTemp mState = Startup;
+
     bool mIsActive = false;
     uint8_t mBitResolution;
     bool mParasite;

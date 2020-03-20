@@ -11,7 +11,7 @@ enum SensorState {
 };
 
 enum MeasureType {
-    OneWire = 1,
+    OneWireBM = 1,
     Temperature = 2,
     Humidity = 4,
     Pressure = 8,

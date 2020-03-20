@@ -7,7 +7,7 @@
 
 #define DebugInfoTemp
 
-OneWireDS18B20::OneWireDS18B20(OneWireDS2482* iBM, uint8_t* iId)
+OneWireDS18B20::OneWireDS18B20(OneWireDS2482* iBM, tIdRef iId)
     : OneWire(iBM, iId)
 {}
 
@@ -68,48 +68,23 @@ float OneWireDS18B20::getTemp()
 
 bool OneWireDS18B20::startConversionTemp()
 {
-    pBM->wireReset();
-    pBM->wireSelect(pId);
+    wireSelectThisDevice();
     pBM->wireWriteByte(STARTCONVO, 1); // Wandlung mit aktivierter parasitärer Versorgung starten
     return true;
 }
 
 bool OneWireDS18B20::updateTemp()
 {
-//     pBM->wireReset();
-//     pBM->wireSelect(pId);
-//     pBM->wireWriteByte(0xBE); // Scratchpad auslesen
-// #ifdef DebugInfoTemp
-//     printDebug(F("lScratchPad = %d"), present);
-//     printDebugln(" ");
-// #endif
-//     ScratchPad lScratchPad;
-//     for (uint8_t i = 0; i < 9; i++)
-//     { // Wir brauchen 9 Byte
-//         lScratchPad[i] = pBM->wireReadByte();
-// #ifdef DebugInfoTemp
-//         printDebug(F("%02x "), lScratchPad[i]);
-// #endif
-//     }
-// #ifdef DebugInfoTemp
-//     printDebugln(" ");
-//     printDebug("CRC = ");
-//     printDebugln(F("%02x"), DS2482_OneWire::crc8(lScratchPad, 8));
-// #endif
-//     byte lConfig = (lScratchPad[4] & 0x60);
-// #ifdef DebugInfoTemp
-//     printDebug("lConfig = ");
-//     printDebugln(F("%02x"), lConfig);
-// #endif
     uint8_t lResolution = resolution();
     uint16_t lTempRaw = (mScratchPad[1] << 8) | mScratchPad[0];
 
     if (lResolution) {
-        uint16_t lShift = 0xFF << abs(lResolution - 12);
+        uint16_t lShift = 0xFFFF << abs(lResolution - 12);
         lTempRaw &= lShift;
         mTemp = (float)lTempRaw / 16.0;
     #ifdef DebugInfoTemp
-        printDebug("Temp = %0.1f°C\n", mTemp);
+        printDebug("Temp = %0.1f°C --- ", mTemp);
+        printHEX("Id: ", Id(), 7);
     #endif
         return true;
     } else {
@@ -120,9 +95,8 @@ bool OneWireDS18B20::updateTemp()
 // reads the device's power requirements
 bool OneWireDS18B20::readPowerSupply()
 {
-    pBM->wireReset();
     bool lResult = false;
-    pBM->wireSelect(pId);
+    wireSelectThisDevice();
     pBM->wireWriteByte(READPOWERSUPPLY);
     if (pBM->wireReadBit() == 0)
         lResult = true;
@@ -146,12 +120,12 @@ bool OneWireDS18B20::isConnected()
 // returns the global resolution
 uint8_t OneWireDS18B20::resolution()
 {
-    // this model has a fixed resolution of 9 bits but getTemp calculates
+    // DS18S20 has a fixed resolution of 9 bits but getTemp calculates
     // a full 12 bits resolution and we need 750ms convert time
     if (isConnected())
     {
         // returned values are 9-12
-        return (pId[0] == DS18S20MODEL) ? 9 : ((mScratchPad[CONFIGURATION] >> 5) & 3) + 9;
+        return (pId[0] == MODEL_DS18S20) ? 9 : ((mScratchPad[CONFIGURATION] >> 5) & 3) + 9;
     }
     return 0;
 }
@@ -165,7 +139,7 @@ bool OneWireDS18B20::resolution(uint8_t iResolution)
     if (isConnected())
     {
         // DS18S20 has a fixed 9-bit resolution
-        if (pId[0] != DS18S20MODEL)
+        if (pId[0] != MODEL_DS18S20)
         {
             mScratchPad[CONFIGURATION] = ((mBitResolution - 9) << 5) | 0x0F;
             writeScratchPad();
@@ -178,13 +152,12 @@ bool OneWireDS18B20::resolution(uint8_t iResolution)
 // writes device's scratch pad
 void OneWireDS18B20::writeScratchPad()
 {
-    pBM->wireReset();
-    pBM->wireSelect(pId);
+    wireSelectThisDevice();
     pBM->wireWriteByte(WRITESCRATCH);
     pBM->wireWriteByte(mScratchPad[HIGH_ALARM_TEMP]); // high alarm temp
     pBM->wireWriteByte(mScratchPad[LOW_ALARM_TEMP]);  // low alarm temp
     // DS18S20 does not use the configuration register
-    if (pId[0] != DS18S20MODEL)
+    if (pId[0] != MODEL_DS18S20)
         pBM->wireWriteByte(mScratchPad[CONFIGURATION]); // configuration
     pBM->wireReset();
     // save the newly written values to eeprom
@@ -198,8 +171,7 @@ void OneWireDS18B20::writeScratchPad()
 void OneWireDS18B20::readScratchPad()
 {
     // send the command
-    pBM->wireReset();
-    pBM->wireSelect(pId);
+    wireSelectThisDevice();
     pBM->wireWriteByte(READSCRATCH); // 0xBE  // Read EEPROM
 
     // TODO => collect all comments &  use simple loop

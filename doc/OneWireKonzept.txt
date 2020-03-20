@@ -1,0 +1,17 @@
+OneWire Grundkonzept:
+
+- BM ist shared Resource, kann nur von einem Sensor gleichzeitig genutzt werden
+- BM selbst hat auch Aufgaben (search)
+- 1-Wire ist langsam, deswegen muss alles non-Blocking sein
+- Das Finden eines Gerätes dauert 91 ms! MUSS non-blocking sein!
+- wireReset dauert bis zu 8 ms, das geht noch, sollte aber zumindest beim Search non-blocking laufen
+- BM bekommt ein callback für unbekannte gefundene ID
+- Beim Search schaut der BM selber nach bekannten IDs
+- Beim startup (aber schon im loop) gibt es erstmal einen vollständigen search, bevor irgendein Sensor was macht
+- Wenn die App eine neue ID (callback) bekommt, instanziert sie einen passenden Sensor
+- Jeder Sensor hat einen (optionalen) callback für Wertänderungen (Wichtig für IO und iButton)
+- Instanzierende App macht gesamte Kommunikation nach außen (so ist das für KONN und ETS nutzbar)
+- Senoren habe auch einen eigenen loop für non-Blocking Aufgaben
+- BM dispatched freie Zeitslots an die Sensoren
+- BM hat 2 Dispatching-Queues, Prio für zeitkritische Sachen (iButton und IO), normal für Rest (messungen)
+- DS18x20 haben einen Modus, um alle auf dem Bus zur DA-Wandelung zu veranlassen, unbedingt nutzen
