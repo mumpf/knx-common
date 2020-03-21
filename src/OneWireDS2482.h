@@ -111,11 +111,13 @@ class OneWireDS2482
 
     // search buffer has to be 8 Byte, 
     // part of search result is crc byte
-    uint8_t mSearchAddress[8]; 
+    uint8_t mSearchResultId[8]; 
     uint8_t mSearchLastDiscrepancy;
+    uint8_t mSearchLastFamilyDiscrepancy;
     uint8_t mSearchLastDeviceFlag;
     uint8_t mSearchLastZero = 0;
     uint8_t mSearchStep = 0;
+
     OneWire *mSensor[30];
     uint8_t mSensorCount = 0;
 
@@ -132,7 +134,7 @@ class OneWireDS2482
 
     StateSearch mStateSearch = SearchReset;
     bool wireSearchLoop();
-    void wireSearchNew();
+    void wireSearchNew(uint8_t iFamilyCode = 0);
     void wireSearchReset();
     bool wireSearchStart(uint8_t iStatus);
     bool wireSearchStep(uint8_t iStep);

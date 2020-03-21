@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstdint>
+#include <Arduino.h>
 
 // Board specific definietions
 // #define BOARD_MASIFI
@@ -60,9 +61,17 @@
 #define PROG_LED_PIN_ACTIVE_ON HIGH
 #define PROG_BUTTON_PIN 11
 #define PROG_BUTTON_PIN_INTERRUPT_ON FALLING
-#define SAVE_INTERRUPT_PIN 8
 #define LED_YELLOW_PIN 38
 // Buzzer
+#define I2C_EEPROM_DEVICE_ADDRESSS 0x50 // Address of 24LC256 eeprom chip
+#endif
+#ifdef BOARD_MASIFI_ONEWIRE
+#define PROG_LED_PIN 13
+#define PROG_LED_PIN_ACTIVE_ON HIGH
+#define PROG_BUTTON_PIN A1
+#define PROG_BUTTON_PIN_INTERRUPT_ON FALLING
+#define LED_YELLOW_PIN 25
+#define I2C_1WIRE_DEVICE_ADDRESSS 0x18  // Address of DS2484 1-Wire-Busmaster chip
 #define I2C_EEPROM_DEVICE_ADDRESSS 0x50 // Address of 24LC256 eeprom chip
 #endif
 
