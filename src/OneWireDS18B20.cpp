@@ -5,7 +5,7 @@
 #include "OneWireDS2482.h"
 #include "OneWireDS18B20.h"
 
-#define DebugInfoTemp
+// #define DebugInfoTemp
 
 OneWireDS18B20::OneWireDS18B20(OneWireDS2482* iBM, tIdRef iId)
     : OneWire(iBM, iId)
@@ -63,6 +63,10 @@ bool OneWireDS18B20::isActive()
 
 float OneWireDS18B20::getTemp()
 {
+    return mTemp;
+}
+
+double OneWireDS18B20::getValue() {
     return mTemp;
 }
 

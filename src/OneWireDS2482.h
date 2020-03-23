@@ -139,4 +139,5 @@ class OneWireDS2482
     bool wireSearchStart(uint8_t iStatus);
     bool wireSearchStep(uint8_t iStep);
     bool wireSearchEnd();
+    bool wireSearchFinished(bool iIsError);
 };

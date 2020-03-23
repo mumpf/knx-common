@@ -29,6 +29,7 @@ typedef uint8_t tId[7];
 typedef uint8_t *tIdRef;
 
 bool equalId(const tIdRef iId1, const tIdRef iId2);
+bool equalId(const tIdRef iId1, const int32_t* iId2);
 bool copyId(tIdRef iIdLeft, const tIdRef iIdRight);
 
 // forward declaration
@@ -39,8 +40,8 @@ class OneWire {
     enum SensorMode
     {
         New,    // Sensor on 1W bus, but not known by application
-        Known,  // Sensor on 1W bus and known by application
-        Removed // Sensor removed from 1W bus, but known by appliation
+        Connected,  // Sensor on 1W bus and known by application
+        Disconnected // Sensor removed from 1W bus, but known by appliation
     };
 
     OneWire(OneWireDS2482 *iBM, tIdRef iId);
@@ -49,8 +50,13 @@ class OneWire {
     // instance members
     virtual void loop() = 0;
     tIdRef Id() { return pId; }
+    uint8_t Family() { return pId[0]; }
     SensorMode Mode();
-    void setModeKnown();
+    void setModeConnected(bool iForce = false);
+    void setModeDisconnected(bool iForce = false);
+    void incrementSearchCount();
+    void clearSearchCount();
+    virtual double getValue();
 
   protected:
     void wireSelectThisDevice();
@@ -58,5 +64,11 @@ class OneWire {
     tId pId = { 0 };
     OneWireDS2482 *pBM; //ref to BusMaster
     uint32_t pDelay = 0;
+  
+  private:
+    // just test
+    const int cMaxCount = 2;
+
     SensorMode mMode = New;
+    uint8_t mSearchCount = 0;
 };

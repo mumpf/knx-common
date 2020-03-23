@@ -9,6 +9,14 @@ bool equalId(const tIdRef iId1, const tIdRef iId2)
     return (iId1[0] == iId2[0]);
 }
 
+bool equalId(const tIdRef iId1, const int32_t* iId2)
+{
+    for (uint8_t i = 1; i < 7; i++)
+        if (iId1[i] != iId2[i])
+            return false;
+    return (iId1[0] == iId2[0]);
+}
+
 bool copyId(tIdRef iIdLeft, const tIdRef iIdRight)
 {
     for (uint8_t i = 0; i < 7; i++)
@@ -27,11 +35,35 @@ OneWire::SensorMode OneWire::Mode() {
     return mMode;
 }
 
-void OneWire::setModeKnown() {
-    mMode = Known;
+void OneWire::setModeConnected(bool iForce /* = false */)
+{
+    if (iForce || mSearchCount >= cMaxCount) {
+        mMode = Connected;
+        mSearchCount = 0;
+    }
+}
+
+void OneWire::setModeDisconnected(bool iForce /* = false */)
+{
+    if (iForce || mSearchCount >= cMaxCount) {
+        mMode = Disconnected;
+        mSearchCount = 0;
+    }
+}
+
+void OneWire::clearSearchCount() {
+    mSearchCount = 0;
+}
+
+void OneWire::incrementSearchCount() {
+    if (mMode != New) mSearchCount++;
 }
 
 void OneWire::wireSelectThisDevice() {
     pBM->wireReset();
     pBM->wireSelect(pId);
+}
+
+double OneWire::getValue() {
+    return 0;
 }

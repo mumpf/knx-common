@@ -12,6 +12,8 @@
 #define I2C_1WIRE_DEVICE_ADDRESSS 0
 #endif
 
+// #define DebugInfoBM
+
 // Constructor with no parameters for compatability with OneWire lib
 OneWireDS2482::OneWireDS2482(foundNewId iNewIdCallback)
 {
@@ -36,26 +38,6 @@ void OneWireDS2482::setup()
     setStrongPullup();
 
     mState = Init;
-    // uint8_t lAddress[8];
-
-    // uint32_t lMaxDelay = 0;
-    // uint32_t lDuration = millis();
-    // uint32_t lCurrentDelay = millis();
-    // uint16_t lCounter = 0;
-    // while (mState != Error)
-    // {
-    //     lCurrentDelay = millis();
-    //     loop();
-    //     uint32_t lDelta = millis() - lCurrentDelay;
-    //     printDebug("Delta #%d: %d\n", lCounter++, lDelta);
-    //     lMaxDelay = max(lMaxDelay, lDelta);
-    // };
-	// for (uint8_t i = 0; i < mIdCount; i++)
-	// {
-	//     printDebug("ID: %02X.%02X%02X%02X%02X%02X%02X %02X == CRC %02X?\n", mIds[i][0], mIds[i][1], mIds[i][2], mIds[i][3], mIds[i][4], mIds[i][5], mIds[i][6], mIds[i][7], crc8(mIds[i], 7));
-	// }
-    // printDebug("Finished search, took %d ms, max blocking was %d ms\n", millis() - lDuration, lMaxDelay);
-    // printDebug("Test finished\n");
 }
 
 void OneWireDS2482::loop()
@@ -109,7 +91,7 @@ bool OneWireDS2482::ProcessNormalBusUse()
 	if (sSensorIndex >= mSensorCount)
         return true; // no sensors available or wrong sensor index
     OneWire *lSensor = mSensor[sSensorIndex++];
-    if (lSensor->Id()[0] == MODEL_DS18B20  && lSensor->Mode() == OneWire::Known) {
+    if (lSensor->Family() == MODEL_DS18B20  && lSensor->Mode() == OneWire::Connected) {
         lSensor->loop();
     }
 	if (sSensorIndex >= mSensorCount)
@@ -127,6 +109,7 @@ OneWire *OneWireDS2482::CreateOneWire(tIdRef iId) {
 	{
 		if (equalId(mSensor[i]->Id(), iId)) {
             lSensor = mSensor[i];
+            lSensor->setModeConnected(); // happens only, if it is not in state New
             break;
         }
 	}
@@ -471,9 +454,10 @@ uint32_t gMaxDelay = 0;
 bool OneWireDS2482::wireSearchLoop()
 {
     uint8_t lStatus = 0;
-    bool lResult = false;
+    bool lExitLoop = false;
+#ifdef DebugInfoBM
     uint32_t lDuration = 0;
-
+#endif
     gDelay = millis();
     switch (mStateSearch)
     {
@@ -514,27 +498,36 @@ bool OneWireDS2482::wireSearchLoop()
             mDelay = millis();
             break;
         case SearchEnd:
-            CreateOneWire(mSearchResultId);
-            mStateSearch = wireSearchEnd() ? SearchFinished : SearchReset;
+            // we do CRC check first
+            if (mSearchResultId[7] == crc8(mSearchResultId, 7)) {
+                CreateOneWire(mSearchResultId);
+                mStateSearch = wireSearchEnd() ? SearchFinished : SearchReset;
+            } else {
+                mStateSearch = SearchError;
+            }
             mDelay = millis();
             break;
         case SearchFinished:
-            lResult = true;
+            lExitLoop = true;
+            wireSearchFinished(false);
             gMaxDelay = max(gMaxDelay, millis() - gDelay);
+#ifdef DebugInfoBM
             lDuration = millis() - gDuration;
 			if (abs(gDurationOld - lDuration) > 5) { 
 				// print only if there is a big difference between cycles
                 printDebug("Finished search, took %d ms, max blocking was %d ms\n", lDuration, gMaxDelay);
                 gDurationOld = lDuration;
             }
+#endif
             break;
         default:
+            lExitLoop = true;
+            wireSearchFinished(true);
             mStateSearch = SearchError;
-            lResult = true;
             break;
     }
     gMaxDelay = max(gMaxDelay, millis() - gDelay);
-    return lResult;
+    return lExitLoop;
 }
 
 
@@ -550,6 +543,12 @@ void OneWireDS2482::wireSearchNew(uint8_t iFamilyCode /* = 0 */ )
     for (uint8_t i = 0; i < 8; i++)
 		mSearchResultId[i] = 0;
 
+    // set all known devices in search mode incrementing their search count
+    for (uint8_t i = 0; i < mSensorCount; i++)
+    {
+        mSensor[i]->incrementSearchCount();
+    }
+    
     if (iFamilyCode) {
         mSearchResultId[0] = iFamilyCode;
         mSearchLastDiscrepancy = 64;
@@ -626,6 +625,19 @@ bool OneWireDS2482::wireSearchEnd()
     if (!mSearchLastZero)
         mSearchLastDeviceFlag = 1;
     return mSearchLastDeviceFlag;
+}
+
+bool OneWireDS2482::wireSearchFinished(bool iIsError) {
+    // we set all remaining sensors in disconnected state
+    // or delete their seach count in case of search error
+    for (uint8_t i = 0; i < mSensorCount; i++)
+    {
+        if (iIsError)
+            mSensor[i]->clearSearchCount();
+        else
+            mSensor[i]->setModeDisconnected();
+    }
+    return !iIsError;
 }
 
 // Sync search, takes 91 ms per sensor!!!!
