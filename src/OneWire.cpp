@@ -32,31 +32,30 @@ OneWire::OneWire(OneWireDS2482* iBM, tIdRef iId)
 OneWire::~OneWire(){};
 
 OneWire::SensorMode OneWire::Mode() {
-    return mMode;
+    return pMode;
 }
 
 void OneWire::setModeConnected(bool iForce /* = false */)
 {
-    if (iForce || mSearchCount >= cMaxCount) {
-        mMode = Connected;
-        mSearchCount = 0;
+    if (iForce || pSearchCount >= cMaxCount) {
+        pMode = Connected;
+        pSearchCount = 0;
     }
 }
 
 void OneWire::setModeDisconnected(bool iForce /* = false */)
 {
-    if (iForce || mSearchCount >= cMaxCount) {
-        mMode = Disconnected;
-        mSearchCount = 0;
-    }
+    // most of the devices are stationary and do not allow any disconnect
+    // override this method for mobile devices like iButton
+    pSearchCount = 0;
 }
 
 void OneWire::clearSearchCount() {
-    mSearchCount = 0;
+    pSearchCount = 0;
 }
 
 void OneWire::incrementSearchCount() {
-    if (mMode != New) mSearchCount++;
+    if (pMode != New) pSearchCount++;
 }
 
 void OneWire::wireSelectThisDevice() {
@@ -64,6 +63,6 @@ void OneWire::wireSelectThisDevice() {
     pBM->wireSelect(pId);
 }
 
-double OneWire::getValue() {
+bool OneWire::getValue(double &eValue) {
     return 0;
 }

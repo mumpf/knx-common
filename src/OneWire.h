@@ -53,10 +53,10 @@ class OneWire {
     uint8_t Family() { return pId[0]; }
     SensorMode Mode();
     void setModeConnected(bool iForce = false);
-    void setModeDisconnected(bool iForce = false);
+    virtual void setModeDisconnected(bool iForce = false);
     void incrementSearchCount();
     void clearSearchCount();
-    virtual double getValue();
+    virtual bool getValue(double &eValue);
 
   protected:
     void wireSelectThisDevice();
@@ -64,11 +64,11 @@ class OneWire {
     tId pId = { 0 };
     OneWireDS2482 *pBM; //ref to BusMaster
     uint32_t pDelay = 0;
-  
-  private:
+    bool pValid = false; // is Value really valid?
+
     // just test
     const int cMaxCount = 2;
 
-    SensorMode mMode = New;
-    uint8_t mSearchCount = 0;
+    SensorMode pMode = New;
+    uint8_t pSearchCount = 0;
 };

@@ -1,6 +1,7 @@
 #pragma once
 #include <inttypes.h>
 #include "OneWire.h"
+#include "OneWireSearchFirst.h"
 
 // Chose between a table based CRC (flash expensive, fast)
 // or a computed CRC (smaller, slow)
@@ -93,15 +94,16 @@ class OneWireDS2482
     void wireSkip();
     void wireSelect(const tIdRef iId);
     uint8_t wireSearch(uint8_t *eAddress);
-
-  private:
+    OneWire *CreateOneWire(tIdRef iId);
     void begin();
     uint8_t end();
     void writeByte(uint8_t);
     uint8_t readByte();
-    OneWire *CreateOneWire(tIdRef iId);
+
+  private:
     bool ProcessNormalBusUse();
 
+    OneWireSearch *mSearch = NULL;
     uint8_t mI2cAddress;
     uint8_t mError;
     foundNewId fNewIdCallback = 0;
@@ -109,35 +111,6 @@ class OneWireDS2482
     StateBM mState = Init;
     uint32_t mDelay = 0;
 
-    // search buffer has to be 8 Byte, 
-    // part of search result is crc byte
-    uint8_t mSearchResultId[8]; 
-    uint8_t mSearchLastDiscrepancy;
-    uint8_t mSearchLastFamilyDiscrepancy;
-    uint8_t mSearchLastDeviceFlag;
-    uint8_t mSearchLastZero = 0;
-    uint8_t mSearchStep = 0;
-
     OneWire *mSensor[30];
     uint8_t mSensorCount = 0;
-
-    enum StateSearch
-    {
-        SearchNew,
-        SearchReset,
-        SearchStart,
-        SearchStep,
-        SearchEnd,
-        SearchError,
-        SearchFinished
-    };
-
-    StateSearch mStateSearch = SearchReset;
-    bool wireSearchLoop();
-    void wireSearchNew(uint8_t iFamilyCode = 0);
-    void wireSearchReset();
-    bool wireSearchStart(uint8_t iStatus);
-    bool wireSearchStep(uint8_t iStep);
-    bool wireSearchEnd();
-    bool wireSearchFinished(bool iIsError);
 };

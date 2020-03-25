@@ -66,8 +66,9 @@ float OneWireDS18B20::getTemp()
     return mTemp;
 }
 
-double OneWireDS18B20::getValue() {
-    return mTemp;
+bool OneWireDS18B20::getValue(double &eValue) {
+    eValue = mTemp;
+    return pValid && pMode == Connected;
 }
 
 bool OneWireDS18B20::startConversionTemp()
@@ -81,7 +82,7 @@ bool OneWireDS18B20::updateTemp()
 {
     uint8_t lResolution = resolution();
     uint16_t lTempRaw = (mScratchPad[1] << 8) | mScratchPad[0];
-
+    bool lResult = false;
     if (lResolution) {
         uint16_t lShift = 0xFFFF << abs(lResolution - 12);
         lTempRaw &= lShift;
@@ -90,10 +91,10 @@ bool OneWireDS18B20::updateTemp()
         printDebug("Temp = %0.1f°C --- ", mTemp);
         printHEX("Id: ", Id(), 7);
     #endif
-        return true;
-    } else {
-        return false;
+        lResult = true;
     }
+    pValid = lResult;
+    return lResult;
 }
 
 // reads the device's power requirements
