@@ -56,7 +56,7 @@ class OneWire {
     virtual void setModeDisconnected(bool iForce = false);
     void incrementSearchCount();
     void clearSearchCount();
-    virtual bool getValue(double &eValue);
+    virtual bool getValue(float &eValue);
 
   protected:
     void wireSelectThisDevice();

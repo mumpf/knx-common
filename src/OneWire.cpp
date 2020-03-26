@@ -63,6 +63,6 @@ void OneWire::wireSelectThisDevice() {
     pBM->wireSelect(pId);
 }
 
-bool OneWire::getValue(double &eValue) {
+bool OneWire::getValue(float &eValue) {
     return 0;
 }

@@ -67,7 +67,7 @@ class OneWireDS18B20 : public OneWire
     void init( bool iIsActive );
 
     float getTemp();
-    bool getValue(double &eValue) override;
+    bool getValue(float &eValue) override;
     
     void isActive(bool iState);
     bool isActive();

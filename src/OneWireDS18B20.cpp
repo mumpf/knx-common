@@ -66,7 +66,7 @@ float OneWireDS18B20::getTemp()
     return mTemp;
 }
 
-bool OneWireDS18B20::getValue(double &eValue) {
+bool OneWireDS18B20::getValue(float &eValue) {
     eValue = mTemp;
     return pValid && pMode == Connected;
 }
