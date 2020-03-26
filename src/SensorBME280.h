@@ -6,7 +6,7 @@ class SensorBME280 : public Sensor, protected Adafruit_BME280
 {
 
 protected:
-    double measureValue(MeasureType iMeasureType) override;
+    float measureValue(MeasureType iMeasureType) override;
     void sensorLoopInternal() override;
     bool initWakeup();
     bool initFinalize();

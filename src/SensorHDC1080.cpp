@@ -3,12 +3,12 @@
 SensorHDC1080::SensorHDC1080(uint8_t iMeasureTypes, uint8_t iAddress)
     : Sensor(iMeasureTypes, iAddress), ClosedCube_HDC1080() {};
 
-double SensorHDC1080::measureValue(MeasureType iMeasureType) {
+float SensorHDC1080::measureValue(MeasureType iMeasureType) {
     switch (iMeasureType)
     {
     case Temperature:
         // hardware calibration
-        return readTemperature() - 2.0;
+        return readTemperature() - 2.0f;
         break;
     case Humidity:
         return readHumidity();

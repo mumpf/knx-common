@@ -6,10 +6,11 @@ class SensorSCD30 : public Sensor, protected SCD30
 {
 
 protected:
-    double measureValue(MeasureType iMeasureType) override;
+    float measureValue(MeasureType iMeasureType) override;
 
 public:
     SensorSCD30(uint8_t iMeasureTypes, uint8_t iAddress);
     virtual ~SensorSCD30() {}
     bool begin() override; 
+    void sensorLoopInternal() override;
 };

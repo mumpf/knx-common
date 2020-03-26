@@ -40,11 +40,11 @@ class Sensor
   protected:
     // Sensor();
     uint8_t gAddress;
-    SensorState gSensorState = Off;
+    SensorState gSensorState = Wakeup;
     uint32_t gSensorStateDelay = 0;
 
     bool checkSensorConnection();
-    virtual double measureValue(MeasureType iMeasureType) = 0; //pure
+    virtual float measureValue(MeasureType iMeasureType) = 0; //pure
     virtual void sensorLoopInternal();
     virtual void sensorSaveState();
     // non blocking restart approach for a sensor
@@ -56,7 +56,7 @@ class Sensor
 
     // static 
     static void sensorLoop();
-    static bool measureValue(MeasureType iMeasureType, double& eValue);
+    static bool measureValue(MeasureType iMeasureType, float& eValue);
     static uint8_t getError();
     static void saveState();
     static void restartSensors();
