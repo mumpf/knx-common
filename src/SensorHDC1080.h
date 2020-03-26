@@ -6,7 +6,7 @@ class SensorHDC1080 : public Sensor, protected ClosedCube_HDC1080
 {
 
 protected:
-    double measureValue(MeasureType iMeasureType) override;
+    float measureValue(MeasureType iMeasureType) override;
 
 public:
     SensorHDC1080(uint8_t iMeasureTypes, uint8_t iAddress);

@@ -47,13 +47,13 @@ void Sensor::changeSensorOrder(Sensor *iSensor, uint8_t iPosition){
 bool Sensor::checkSensorConnection()
 {
     bool lResult = false;
-    if (gSensorState == Running) {
+    // if (gSensorState == Running) {
         // ceck for I2C ack
         Wire.beginTransmission(gAddress);
         lResult = (Wire.endTransmission() == 0);
         if (!lResult)
             restartSensor();
-    }
+    // }
     return lResult;
 }
 
@@ -63,9 +63,13 @@ void Sensor::sensorLoopInternal() {
     case Wakeup:
         // try immediately to start the sensor, then every second
         if (gSensorStateDelay == 0 || delayCheck(gSensorStateDelay, 1000)) {
-            if (begin()) gSensorState = Finalize;
+            if (begin()) gSensorState = Calibrate;
             gSensorStateDelay = millis();
         }
+        break;
+    case Calibrate:
+        // no calibration necessary
+        gSensorState = Finalize;
         break;
     case Finalize:
         // give the sensor 100 ms before querying starts
@@ -78,7 +82,7 @@ void Sensor::sensorLoopInternal() {
 }
 
 bool Sensor::begin() {
-    gSensorState = Running;
+    // gSensorState = Running;
     return checkSensorConnection();
 }
 
@@ -93,7 +97,7 @@ void Sensor::saveState() {
 }
 
 // static
-bool Sensor::measureValue(MeasureType iMeasureType, double& eValue) {
+bool Sensor::measureValue(MeasureType iMeasureType, float& eValue) {
     bool lResult = false;
     for (uint8_t lCounter = 0; lCounter < sNumSensors; lCounter++)
     {
@@ -111,11 +115,11 @@ bool Sensor::measureValue(MeasureType iMeasureType, double& eValue) {
 //static
 uint8_t Sensor::getError() {
     uint8_t lResult = 0;
-    for (uint8_t lCounter = 0; lCounter < sNumSensors; lCounter++)
-    {
-        if (sSensors[lCounter]->gSensorState != Running) {
-            lResult |= sSensors[lCounter]->gMeasureTypes;
-        }
-    }
+    // for (uint8_t lCounter = 0; lCounter < sNumSensors; lCounter++)
+    // {
+    //     if (sSensors[lCounter]->gSensorState != Running) {
+    //         lResult |= sSensors[lCounter]->gMeasureTypes;
+    //     }
+    // }
     return lResult;
 }

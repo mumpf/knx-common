@@ -97,12 +97,12 @@ void SensorBME680::sensorLoopInternal() {
     }
 }
 
-double SensorBME680::measureValue(MeasureType iMeasureType) {
+float SensorBME680::measureValue(MeasureType iMeasureType) {
     switch (iMeasureType)
     {
         case Temperature:
             // hardware calibration
-            return Bsec::temperature - 3.5;
+            return Bsec::temperature - 3.5f;
             break;
         case Humidity:
             return Bsec::humidity;
@@ -117,12 +117,12 @@ double SensorBME680::measureValue(MeasureType iMeasureType) {
             return Bsec::co2Equivalent;
             break;
         case Accuracy:
-            return (Bsec::iaqAccuracy / 3.0) * 100.0 ;
+            return (Bsec::iaqAccuracy / 3.0f) * 100.0f ;
             break;
         default:
             break;
     }
-    return -1000.0;
+    return -1000.0f;
 }
 
 bool SensorBME680::begin() {

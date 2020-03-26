@@ -8,7 +8,7 @@ class SensorBME680 : public Sensor, protected Bsec
 {
 
 protected:
-    double measureValue(MeasureType iMeasureType) override;
+    float measureValue(MeasureType iMeasureType) override;
     void sensorSaveState() override;
     void sensorLoopInternal() override;
     bool checkIaqSensorStatus(void);

@@ -3,12 +3,12 @@
 SensorSCD30::SensorSCD30(uint8_t iMeasureTypes, uint8_t iAddress)
     : Sensor(iMeasureTypes, iAddress), SCD30() {};
 
-double SensorSCD30::measureValue(MeasureType iMeasureType) {
+float SensorSCD30::measureValue(MeasureType iMeasureType) {
     switch (iMeasureType)
     {
     case Temperature:
         // hardware calibration
-        return getTemperature() - 3.0;
+        return getTemperature() - 3.0f;
         break;
     case Humidity:
         return getHumidity();
@@ -19,7 +19,7 @@ double SensorSCD30::measureValue(MeasureType iMeasureType) {
     default:
         break;
     }
-    return -1000.0;
+    return -1000.0f;
 }
 
 bool SensorSCD30::begin() {
@@ -28,5 +28,27 @@ bool SensorSCD30::begin() {
     if (lResult) lResult = Sensor::begin();
     printResult(lResult);
     return lResult;
+}
+
+void SensorSCD30::sensorLoopInternal() {
+    switch (gSensorState)
+    {
+    case Wakeup:
+        Sensor::sensorLoopInternal();
+        break;
+    case Calibrate:
+        Sensor::sensorLoopInternal();
+        break;
+    case Finalize:
+        // we ask for Temperature until we get a valid value
+        if (delayCheck(gSensorStateDelay, 200)) {
+            if (getTemperature() > 0) gSensorState = Running;
+            gSensorStateDelay = millis();
+        }
+        break;
+    default:
+        Sensor::sensorLoopInternal();
+        break;
+    }
 }
 

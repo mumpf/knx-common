@@ -26,10 +26,10 @@ void SensorBME280::sensorLoopInternal() {
         }
         break;
     case Finalize:
-        if (delayCheck(gSensorStateDelay, 100)) gSensorState = Running;
+        Sensor::sensorLoopInternal();
         break;
     default:
-        gSensorStateDelay = 0;
+        Sensor::sensorLoopInternal();
         break;
     }
 }
@@ -60,12 +60,12 @@ bool SensorBME280::initFinalize() {
     return true;
 }
 
-double SensorBME280::measureValue(MeasureType iMeasureType) {
+float SensorBME280::measureValue(MeasureType iMeasureType) {
     switch (iMeasureType)
     {
     case Temperature:
         // hardware calibration
-        return readTemperature() - 2.0;
+        return readTemperature() - 2.0f;
         break;
     case Humidity:
         return readHumidity();
