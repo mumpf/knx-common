@@ -53,7 +53,7 @@ class OneWire {
     uint8_t Family() { return pId[0]; }
     SensorMode Mode();
     void setModeConnected(bool iForce = false);
-    virtual void setModeDisconnected(bool iForce = false);
+    void setModeDisconnected(bool iForce = false);
     void incrementSearchCount();
     void clearSearchCount();
     virtual bool getValue(float &eValue);

@@ -49,8 +49,9 @@ void SensorBME680::sensorLoopInternal() {
     switch (gSensorState)
     {
         case Wakeup:
-            if (gSensorStateDelay == 0 || delayCheck(gSensorStateDelay, 1000))
+            if (pSensorStateDelay == 0 || delayCheck(pSensorStateDelay, 1000))
             {
+                pSensorStateDelay = millis();
                 printDebug("Restarting Sensor BME680... ");
                 Bsec::setConfig(bsec_config_iaq);
                 lResult = checkIaqSensorStatus();
@@ -59,29 +60,27 @@ void SensorBME680::sensorLoopInternal() {
                     Bsec::updateSubscription(sensorList, sizeof(sensorList) / sizeof(bsec_virtual_sensor_t), BSEC_SAMPLE_RATE_LP);
                     lResult = checkIaqSensorStatus();
                 }
-                if (lResult)
-                    gSensorState = Calibrate;
-                gSensorStateDelay = millis();
+                gSensorState = lResult ? Calibrate : Off;
             }
             break;
         case Calibrate:
-            if (delayCheck(gSensorStateDelay, 100))
+            if (delayCheck(pSensorStateDelay, 100))
             {
                 sensorLoadState();
                 lResult = checkIaqSensorStatus();
-                gSensorState = lResult ? Finalize : Wakeup;
-                gSensorStateDelay = millis();
+                gSensorState = lResult ? Finalize : Off;
+                pSensorStateDelay = millis();
                 if (lResult)
                     Bsec::run();
                 printResult(lResult);
             }
             break;
         case Finalize:
-            if (delayCheck(gSensorStateDelay, 100))
+            if (delayCheck(pSensorStateDelay, 100))
             {
                 // as long as there are no new values, sensor is not yet ready
                 gSensorState = Bsec::run() ? Running : Finalize;
-                gSensorStateDelay = millis();
+                pSensorStateDelay = millis();
             }
             break;
         case Running:
@@ -92,7 +91,7 @@ void SensorBME680::sensorLoopInternal() {
             }
             break;
         default:
-            gSensorStateDelay = 0;
+            pSensorStateDelay = millis();
             break;
     }
 }
@@ -146,7 +145,7 @@ bool SensorBME680::begin() {
     if (lResult)
         lResult = Sensor::begin();
     gSensorState = Finalize;
-    gSensorStateDelay = millis();
+    pSensorStateDelay = millis();
     printResult(lResult);
     return lResult;
 }

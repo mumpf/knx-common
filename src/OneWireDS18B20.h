@@ -63,7 +63,7 @@ class OneWireDS18B20 : public OneWire
 
   public:
     OneWireDS18B20(OneWireDS2482 *iBusMaster, tIdRef iId);
-    
+
     void init( bool iIsActive );
 
     float getTemp();

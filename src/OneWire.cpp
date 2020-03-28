@@ -45,9 +45,11 @@ void OneWire::setModeConnected(bool iForce /* = false */)
 
 void OneWire::setModeDisconnected(bool iForce /* = false */)
 {
-    // most of the devices are stationary and do not allow any disconnect
-    // override this method for mobile devices like iButton
-    pSearchCount = 0;
+    if (iForce || pSearchCount >= cMaxCount)
+    {
+        pMode = Disconnected;
+        pSearchCount = 0;
+    }
 }
 
 void OneWire::clearSearchCount() {

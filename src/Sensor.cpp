@@ -31,8 +31,8 @@ void Sensor::restartSensors() {
 }
 
 void Sensor::restartSensor() {
-    gSensorStateDelay = 0;
-    gSensorState = Wakeup;
+    // pSensorStateDelay = 0;
+    // gSensorState = Wakeup;
 }
 
 void Sensor::changeSensorOrder(Sensor *iSensor, uint8_t iPosition){
@@ -62,9 +62,10 @@ void Sensor::sensorLoopInternal() {
     {
     case Wakeup:
         // try immediately to start the sensor, then every second
-        if (gSensorStateDelay == 0 || delayCheck(gSensorStateDelay, 1000)) {
-            if (begin()) gSensorState = Calibrate;
-            gSensorStateDelay = millis();
+        if (pSensorStateDelay == 0 || delayCheck(pSensorStateDelay, 1000)) {
+            // if (begin()) gSensorState = Calibrate;
+            gSensorState = begin() ? Calibrate : Off;
+            pSensorStateDelay = millis();
         }
         break;
     case Calibrate:
@@ -73,10 +74,10 @@ void Sensor::sensorLoopInternal() {
         break;
     case Finalize:
         // give the sensor 100 ms before querying starts
-        if (delayCheck(gSensorStateDelay, 100)) gSensorState = Running;
+        if (delayCheck(pSensorStateDelay, 100)) gSensorState = Running;
         break;
     default:
-        gSensorStateDelay = 0;
+        pSensorStateDelay = 0;
         break;
     }
 }

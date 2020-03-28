@@ -21,7 +21,8 @@ OneWireDS2482::OneWireDS2482(uint8_t iI2cAddressOffset, foundNewId iNewIdCallbac
     mI2cAddress = I2C_1WIRE_DEVICE_ADDRESSS | iI2cAddressOffset;
     fNewIdCallback = iNewIdCallback;
     mError = 0;
-    mSearch = new OneWireSearchFirst(this);
+    mSearchPrio = new OneWireSearchFirst(this);
+    mSearchNormal = new OneWireSearchFirst(this);
 }
 
 OneWireDS2482::OneWireDS2482(foundNewId iNewIdCallback) : OneWireDS2482(0, iNewIdCallback)
@@ -45,37 +46,50 @@ void OneWireDS2482::loop()
     switch (mState)
 	{
         case Init:
-            mSearch->reset();
-            mState = Startup;
+            mSearchPrio->newSearchAll();
+            mSearchNormal->newSearchAll();
+            // mSearchNormal->newSearchNoFamily(MODEL_DS1990);
+            mState = SearchIButton;
             break;
-        case Startup:
-			// at startup we do an initial search to find all supported sensors
-            if (mSearch->loop())
+        // case Startup:
+		// 	// at startup we do an initial search to find all supported sensors
+        //     if (mSearchPrio->loop())
+        //     {
+        //         // search is finished, we have to find out if successful
+        //         mState = (mSearchPrio->state() == OneWireSearch::SearchFinished) ? PriorityBusUse : Error;
+        //     }
+        //     mDelay = millis();
+        //     break;
+		case SearchIButton:
+            if (mSearchPrio->loop())
             {
                 // search is finished, we have to find out if successful
-                mState = (mSearch->state() == OneWireSearch::SearchFinished) ? PriorityBusUse : Error;
+                mState = (mSearchPrio->state() == OneWireSearch::SearchFinished) ? ProcessIO : Error;
             }
             mDelay = millis();
             break;
-		case Search:
-            if (mSearch->loop())
+        case ProcessIO:
+            mState = ProcessSensors;
+            break;
+        case ProcessSensors:
+            if (ProcessNormalBusUse())
+            {
+                mState = SearchNewDevices;
+            }
+            break;
+        case SearchNewDevices:
+            if (mSearchNormal->loop())
             {
                 // search is finished, we have to find out if successful
-                mState = (mSearch->state() == OneWireSearch::SearchFinished) ? PriorityBusUse : Error;
+                mState = (mSearchNormal->state() == OneWireSearch::SearchFinished) ? Idle : Error;
             }
             mDelay = millis();
-            break;
-        case PriorityBusUse:
-            mState = NormalBusUse;
-            break;
-        case NormalBusUse:
-			if (ProcessNormalBusUse()) {
-            	mState = Idle;
-            } 
             break;
         case Idle:
-            mState = Search;
-            mSearch->reset();
+            mState = SearchIButton;
+            mSearchNormal->newSearchAll();
+            // mSearchNormal->newSearchNoFamily(MODEL_DS1990);
+            mSearchPrio->newSearchFamily(MODEL_DS1990);
             mDelay = millis();
             break;
         default:

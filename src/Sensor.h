@@ -32,7 +32,7 @@ class Sensor
     // Sensor();
     uint8_t gAddress;
     SensorState gSensorState = Wakeup;
-    uint32_t gSensorStateDelay = 0;
+    uint32_t pSensorStateDelay = 0;
 
     bool checkSensorConnection();
     virtual float measureValue(MeasureType iMeasureType) = 0; //pure

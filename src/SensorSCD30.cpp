@@ -41,9 +41,9 @@ void SensorSCD30::sensorLoopInternal() {
         break;
     case Finalize:
         // we ask for Temperature until we get a valid value
-        if (delayCheck(gSensorStateDelay, 200)) {
+        if (delayCheck(pSensorStateDelay, 200)) {
             if (getTemperature() > 0) gSensorState = Running;
-            gSensorStateDelay = millis();
+            pSensorStateDelay = millis();
         }
         break;
     default:

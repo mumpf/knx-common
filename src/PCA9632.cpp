@@ -101,7 +101,7 @@ const uint16_t pwmtable[32] PROGMEM =
 void PCA9632_SetColor(const byte iR, const byte iG, const byte iB) {
   if (!PCA_init) {
     PCA_init = 1;
-    Wire.begin();
+    // Wire.begin();
     PCA9632_WriteRegister(PCA9632_ADDRESS,PCA9632_MODE1, PCA9632_MODE1_VALUE);
     PCA9632_WriteRegister(PCA9632_ADDRESS,PCA9632_MODE2, PCA9632_MODE2_VALUE);
   }

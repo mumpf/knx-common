@@ -1,28 +1,39 @@
 #include "OneWireSearch.h"
 #include "OneWireDS2482.h"
 
-// #define DebugInfoSearch
-
 OneWireSearch::OneWireSearch(OneWireDS2482* iBM)
 {
     mBM = iBM;
-    mStateSearch = SearchNew;
+    mSearchState = SearchNew;
 }
 
-OneWireSearch::StateSearch OneWireSearch::state()
+OneWireSearch::SearchState OneWireSearch::state()
 {
-    return mStateSearch;
+    return mSearchState;
 }
 
-#ifdef DebugInfoSearch
-uint32_t gDuration = 0;
-uint32_t gDurationOld = 0;
-uint32_t gDelay = 0;
-uint32_t gMaxDelay = 0;
-#endif
+void OneWireSearch::newSearchAll()
+{
+    mSearchState = SearchNew;
+    mSearchMode = All;
+    mSearchFamily = 0;
+    wireSearchNew();
+}
 
-void OneWireSearch::reset(){
-    mStateSearch = SearchNew;
+void OneWireSearch::newSearchFamily(uint8_t iFamily)
+{
+    mSearchState = SearchNew;
+    mSearchMode = Family;
+    mSearchFamily = iFamily;
+    wireSearchNew(iFamily);
+}
+
+void OneWireSearch::newSearchNoFamily(uint8_t iFamily)
+{
+    mSearchState = SearchNew;
+    mSearchMode = NoFamily;
+    mSearchFamily = 0;
+    wireSearchNew(iFamily);
 }
 
 // async search, max blocking time 4 ms
@@ -32,46 +43,48 @@ bool OneWireSearch::loop()
     bool lExitLoop = false;
 #ifdef DebugInfoSearch
     uint32_t lDuration = 0;
-    gDelay = millis();
+    mCurrDelay = millis();
 #endif
-    switch (mStateSearch)
+    switch (mSearchState)
     {
 		case SearchNew:
 #ifdef DebugInfoSearch
 			// DEBUG: Time measurement
-			gDuration = millis();
-            gMaxDelay = 0;
+			mDuration = millis();
+            mMaxDelay = 0;
 #endif
-            wireSearchNew();
-            mStateSearch = SearchReset;
+            mSearchState = SearchReset;
             break;
         case SearchReset:
             wireSearchReset();
-            mStateSearch = SearchStart;
+            mSearchState = SearchStart;
             mDelay = millis();
             break;
         case SearchStart:
             lStatus = mBM->readStatus();//(false);
             if (!(lStatus & DS2482_STATUS_BUSY))
             {
-                mStateSearch = wireSearchStart(lStatus) ? SearchStep : SearchError;
+                mSearchState = wireSearchStart(lStatus) ? SearchStep : SearchError;
                 mDelay = millis();
             }
             else if (delayCheck(mDelay, 1000))
             {
-                mStateSearch = SearchError;
+                mSearchState = SearchError;
             }
             break;
         case SearchStep:
             if (wireSearchStep(mSearchStep))
             {
                 mSearchStep += 1;
+                // with family search we can stop as soon as an other family is found
+                if (mSearchMode == Family && mSearchFamily != mSearchResultId[0])
+                    mSearchState = SearchFinished;
                 if (mSearchStep == 64)
-                    mStateSearch = SearchEnd;
+                    mSearchState = SearchEnd;
             }
             else
             {
-                mStateSearch = SearchError;
+                mSearchState = SearchError;
             };
             mDelay = millis();
             break;
@@ -79,9 +92,9 @@ bool OneWireSearch::loop()
             // we do CRC check first
             if (mSearchResultId[7] == mBM->crc8(mSearchResultId, 7)) {
                 mBM->CreateOneWire(mSearchResultId);
-                mStateSearch = wireSearchEnd() ? SearchFinished : SearchReset;
+                mSearchState = wireSearchEnd() ? SearchFinished : SearchReset;
             } else {
-                mStateSearch = SearchError;
+                mSearchState = SearchError;
             }
             mDelay = millis();
             break;
@@ -89,23 +102,23 @@ bool OneWireSearch::loop()
             lExitLoop = true;
             wireSearchFinished(false);
 #ifdef DebugInfoSearch
-            gMaxDelay = max(gMaxDelay, millis() - gDelay);
-            lDuration = millis() - gDuration;
-			if (abs(gDurationOld - lDuration) > 5) { 
+            mMaxDelay = max(mMaxDelay, millis() - mCurrDelay);
+            lDuration = millis() - mDuration;
+			if (abs(mDurationOld - lDuration) > 5) { 
 				// print only if there is a big difference between cycles
-                printDebug("Finished search, took %d ms, max blocking was %d ms\n", lDuration, gMaxDelay);
-                gDurationOld = lDuration;
+                printDebug("Finished search %s, took %d ms, max blocking was %d ms\n", mSearchMode == Family ? "Family" : "NoFamily", lDuration, mMaxDelay);
+                mDurationOld = lDuration;
             }
 #endif
             break;
         default:
             lExitLoop = true;
             wireSearchFinished(true);
-            mStateSearch = SearchError;
+            mSearchState = SearchError;
             break;
     }
 #ifdef DebugInfoSearch
-    gMaxDelay = max(gMaxDelay, millis() - gDelay);
+    mMaxDelay = max(mMaxDelay, millis() - mCurrDelay);
 #endif
     return lExitLoop;
 }

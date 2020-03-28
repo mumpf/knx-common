@@ -305,7 +305,7 @@ void DS2482_OneWire::wireSelect(const uint8_t rom[8])
 //  1-Wire reset seatch algorithm
 void DS2482_OneWire::wireResetSearch()
 {
-	searchLastDiscrepancy = 0;
+	searchLastDiscrepancy = -1;
 	searchLastDeviceFlag = 0;
 
 	for (int i = 0; i < 8; i++)
@@ -319,7 +319,7 @@ void DS2482_OneWire::wireResetSearch()
 uint8_t DS2482_OneWire::wireSearch(uint8_t *address)
 {
 	uint8_t direction;
-	uint8_t last_zero=0;
+	int8_t last_zero = -1;
 
 	if (searchLastDeviceFlag)
 		return 0;
@@ -374,7 +374,7 @@ uint8_t DS2482_OneWire::wireSearch(uint8_t *address)
 
 	searchLastDiscrepancy = last_zero;
 
-	if (!last_zero)
+	if (last_zero == -1)
 		searchLastDeviceFlag = 1;
 
 	for (uint8_t i=0; i<8; i++)

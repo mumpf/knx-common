@@ -4,6 +4,8 @@
 #include "OneWire.h"
 // #include <OneWireDS2482.h>
 
+#define DebugInfoSearch
+
 // forward declaration
 class OneWireDS2482;
 
@@ -11,7 +13,7 @@ class OneWireDS2482;
 class OneWireSearch
 {
   public:
-    enum StateSearch
+    enum SearchState
     {
         SearchNew,
         SearchReset,
@@ -21,28 +23,47 @@ class OneWireSearch
         SearchError,
         SearchFinished
     };
+    enum SearchMode
+    {
+        All,
+        Family,
+        NoFamily,
+        Id
+    };
 
     OneWireSearch(OneWireDS2482 *iBM);
 
     bool loop();
-    void reset();
-    StateSearch state();
+    void newSearchAll();
+    void newSearchFamily(uint8_t iFamily);
+    void newSearchNoFamily(uint8_t iNoFamily);
+    void newSearchForId(tIdRef iId);
+    SearchState state();
 
   protected:
     OneWireDS2482 *mBM = NULL;
     uint32_t mDelay = 0;
-    
-    StateSearch mStateSearch = SearchNew;
 
+#ifdef DebugInfoSearch
+    uint32_t mDuration = 0;
+    uint32_t mDurationOld = 0;
+    uint32_t mCurrDelay = 0;
+    uint32_t mMaxDelay = 0;
+#endif
+
+    SearchState mSearchState = SearchNew;
+    SearchMode mSearchMode = All;
+    
     // search buffer has to be 8 Byte, 
     // part of search result is crc byte
     uint8_t mSearchResultId[8]; 
-    uint8_t mSearchLastDiscrepancy;
+    int8_t mSearchLastDiscrepancy = -1;
     uint8_t mSearchLastFamilyDiscrepancy;
     uint8_t mSearchLastDeviceFlag;
-    uint8_t mSearchLastZero = 0;
+    int8_t mSearchLastZero = -1;
     uint8_t mSearchStep = 0;
-
+    uint8_t mSearchFamily = 0;
+    
     virtual void wireSearchNew(uint8_t iFamilyCode = 0) = 0;
     virtual void wireSearchReset() = 0;
     virtual bool wireSearchStart(uint8_t iStatus) = 0;

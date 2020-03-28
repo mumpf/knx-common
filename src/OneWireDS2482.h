@@ -47,9 +47,10 @@ class OneWireDS2482
     {
         Init,
         Startup,
-        Search,
-        PriorityBusUse,
-        NormalBusUse,
+        SearchIButton,
+        ProcessIO,
+        ProcessSensors,
+        SearchNewDevices,
         Idle,
         Error
     };
@@ -103,7 +104,9 @@ class OneWireDS2482
   private:
     bool ProcessNormalBusUse();
 
-    OneWireSearch *mSearch = NULL;
+    OneWireSearch *mSearchPrio = NULL;
+    OneWireSearch *mSearchNormal = NULL;
+
     uint8_t mI2cAddress;
     uint8_t mError;
     foundNewId fNewIdCallback = 0;

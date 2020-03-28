@@ -5,14 +5,37 @@ OneWireSearchFirst::OneWireSearchFirst(OneWireDS2482* iBM)
     : OneWireSearch(iBM)
 {
     mBM = iBM;
-    mStateSearch = SearchNew;
+    mSearchState = SearchNew;
+}
+
+bool OneWireSearchFirst::ChangeSensorExistence(OneWire* iSensor)
+{
+    bool lResult = false;
+    switch (mSearchMode)
+    {
+        case All:
+            lResult = true;
+            break;
+        case Family:
+            lResult = (iSensor->Family() == mSearchFamily);
+            break;
+        case NoFamily:
+            lResult = (iSensor->Family() != mSearchFamily);
+            break;
+        case Id:
+            lResult = false; //todo
+            break;
+        default:
+            break;
+    }
+    return lResult;
 }
 
 //  1-Wire reset search algorithm
 void OneWireSearchFirst::wireSearchNew(uint8_t iFamilyCode /* = 0 */ )
 {
     // reset search fields
-	mSearchLastDiscrepancy = 0;
+	mSearchLastDiscrepancy = -1;
 	mSearchLastDeviceFlag = 0;
     mSearchLastFamilyDiscrepancy = 0;
 
@@ -23,7 +46,8 @@ void OneWireSearchFirst::wireSearchNew(uint8_t iFamilyCode /* = 0 */ )
     // set all known devices in search mode incrementing their search count
     for (uint8_t i = 0; i < mBM->SensorCount(); i++)
     {
-        mBM->Sensor(i)->incrementSearchCount();
+        if (ChangeSensorExistence(mBM->Sensor(i)))
+            mBM->Sensor(i)->incrementSearchCount();
     }
     
     if (iFamilyCode) {
@@ -46,7 +70,7 @@ void OneWireSearchFirst::wireSearchReset() {
 bool OneWireSearchFirst::wireSearchStart(uint8_t iStatus)
 {
     mSearchStep = 0;
-    mSearchLastZero = 0;
+    mSearchLastZero = -1;
     if (mSearchLastDeviceFlag)
         return false;
     // if (!wireReset())
@@ -58,8 +82,9 @@ bool OneWireSearchFirst::wireSearchStart(uint8_t iStatus)
     }
 
     if (!(iStatus & DS2482_STATUS_PPD)) return false;
-    mBM->waitOnBusy(); //(false);
+    mBM->waitOnBusy(false);
     mBM->wireWriteByte(WIRE_COMMAND_SEARCH);
+    mBM->waitOnBusy(false);
     return true;
 }
 
@@ -74,22 +99,24 @@ bool OneWireSearchFirst::wireSearchStep(uint8_t iStep) {
     else
         lDirection = (iStep == mSearchLastDiscrepancy);
 
-    mBM->waitOnBusy(); //(false);
     mBM->begin();
     mBM->writeByte(DS2482_COMMAND_TRIPLET);
     mBM->writeByte(lDirection ? 0x80 : 0x00);
     mBM->end();
 
-    uint8_t lStatus = mBM->waitOnBusy(); //(false);
+    uint8_t lStatus = mBM->waitOnBusy(false);
     uint8_t lId = lStatus & DS2482_STATUS_SBR;
     uint8_t lCompId = lStatus & DS2482_STATUS_TSB;
     lDirection = lStatus & DS2482_STATUS_DIR;
 
-    if (lId && lCompId)
+    if (lId && lCompId) {
         return false;
-    else if (!lId && !lCompId && !lDirection)
+    } else if (!lId && !lCompId && !lDirection) {
         mSearchLastZero = iStep;
-
+        // check for Last discrepancy in family
+        if (mSearchLastZero < 9)
+            mSearchLastFamilyDiscrepancy = mSearchLastZero;
+    }
     if (lDirection)
         mSearchResultId[lSearchByte] |= lSearchBit;
     else
@@ -100,7 +127,7 @@ bool OneWireSearchFirst::wireSearchStep(uint8_t iStep) {
 bool OneWireSearchFirst::wireSearchEnd()
 {
     mSearchLastDiscrepancy = mSearchLastZero;
-    if (!mSearchLastZero)
+    if (mSearchLastZero == -1)
         mSearchLastDeviceFlag = 1;
     return mSearchLastDeviceFlag;
 }
@@ -110,10 +137,13 @@ bool OneWireSearchFirst::wireSearchFinished(bool iIsError) {
     // or delete their seach count in case of search error
     for (uint8_t i = 0; i < mBM->SensorCount(); i++)
     {
-        if (iIsError)
-            mBM->Sensor(i)->clearSearchCount();
-        else
-            mBM->Sensor(i)->setModeDisconnected();
+        if (ChangeSensorExistence(mBM->Sensor(i)))
+        {
+            if (iIsError)
+                mBM->Sensor(i)->clearSearchCount();
+            else
+                mBM->Sensor(i)->setModeDisconnected();
+        }
     }
     return !iIsError;
 }
@@ -123,7 +153,7 @@ bool OneWireSearchFirst::wireSearchFinished(bool iIsError) {
 uint8_t OneWireSearchFirst::wireSearchBlocking(tIdRef eAddress)
 {
 	uint8_t lDirection;
-	uint8_t lLastZero=0;
+	int8_t lLastZero = -1;
 
 	if (mSearchLastDeviceFlag)
 		return 0;
@@ -167,7 +197,7 @@ uint8_t OneWireSearchFirst::wireSearchBlocking(tIdRef eAddress)
 			mSearchResultId[lSearchByte] &= ~lSearchBit;
 	}
 	mSearchLastDiscrepancy = lLastZero;
-	if (!lLastZero)
+	if (lLastZero == -1)
 		mSearchLastDeviceFlag = 1;
 	// found id is just valid if crc8 check is ok
     if (mSearchResultId[7] != mBM->crc8(mSearchResultId, 7))

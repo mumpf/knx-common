@@ -10,19 +10,19 @@ void SensorBME280::sensorLoopInternal() {
     switch (gSensorState)
     {
     case Wakeup:
-        if (gSensorStateDelay == 0 || delayCheck(gSensorStateDelay, 1000)) {
+        if (pSensorStateDelay == 0 || delayCheck(pSensorStateDelay, 1000)) {
             if (initWakeup()) gSensorState = Calibrate;
-            gSensorStateDelay = millis();
+            pSensorStateDelay = millis();
         }
         break;
     case Calibrate:
-        if (delayCheck(gSensorStateDelay, 100))
+        if (delayCheck(pSensorStateDelay, 100))
         {
             if (!isReadingCalibration()) {
                 initFinalize();
                 gSensorState = Finalize;
             }
-            gSensorStateDelay = millis();
+            pSensorStateDelay = millis();
         }
         break;
     case Finalize:
