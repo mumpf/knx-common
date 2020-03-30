@@ -8,31 +8,8 @@ OneWireSearchFirst::OneWireSearchFirst(OneWireDS2482* iBM)
     mSearchState = SearchNew;
 }
 
-bool OneWireSearchFirst::ChangeSensorExistence(OneWire* iSensor)
-{
-    bool lResult = false;
-    switch (mSearchMode)
-    {
-        case All:
-            lResult = true;
-            break;
-        case Family:
-            lResult = (iSensor->Family() == mSearchFamily);
-            break;
-        case NoFamily:
-            lResult = (iSensor->Family() != mSearchFamily);
-            break;
-        case Id:
-            lResult = false; //todo
-            break;
-        default:
-            break;
-    }
-    return lResult;
-}
-
 //  1-Wire reset search algorithm
-void OneWireSearchFirst::wireSearchNew(uint8_t iFamilyCode /* = 0 */ )
+void OneWireSearchFirst::wireSearchNew()
 {
     // reset search fields
 	mSearchLastDiscrepancy = -1;
@@ -44,14 +21,10 @@ void OneWireSearchFirst::wireSearchNew(uint8_t iFamilyCode /* = 0 */ )
 		mSearchResultId[i] = 0;
 
     // set all known devices in search mode incrementing their search count
-    for (uint8_t i = 0; i < mBM->SensorCount(); i++)
-    {
-        if (ChangeSensorExistence(mBM->Sensor(i)))
-            mBM->Sensor(i)->incrementSearchCount();
-    }
+    manageSearchCounter(SearchNew);
     
-    if (iFamilyCode) {
-        mSearchResultId[0] = iFamilyCode;
+    if (mSearchMode == Family) {
+        mSearchResultId[0] = mSearchFamily;
         mSearchLastDiscrepancy = 64;
     }
     // reset bus (see wireReset) in non blocking way
@@ -135,16 +108,7 @@ bool OneWireSearchFirst::wireSearchEnd()
 bool OneWireSearchFirst::wireSearchFinished(bool iIsError) {
     // we set all remaining sensors in disconnected state
     // or delete their seach count in case of search error
-    for (uint8_t i = 0; i < mBM->SensorCount(); i++)
-    {
-        if (ChangeSensorExistence(mBM->Sensor(i)))
-        {
-            if (iIsError)
-                mBM->Sensor(i)->clearSearchCount();
-            else
-                mBM->Sensor(i)->setModeDisconnected();
-        }
-    }
+    manageSearchCounter(iIsError ? SearchError : SearchFinished);
     return !iIsError;
 }
 

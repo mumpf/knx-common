@@ -17,7 +17,6 @@ void OneWireSearch::newSearchAll()
     mSearchState = SearchNew;
     mSearchMode = All;
     mSearchFamily = 0;
-    wireSearchNew();
 }
 
 void OneWireSearch::newSearchFamily(uint8_t iFamily)
@@ -25,22 +24,74 @@ void OneWireSearch::newSearchFamily(uint8_t iFamily)
     mSearchState = SearchNew;
     mSearchMode = Family;
     mSearchFamily = iFamily;
-    wireSearchNew(iFamily);
 }
 
 void OneWireSearch::newSearchNoFamily(uint8_t iFamily)
 {
     mSearchState = SearchNew;
     mSearchMode = NoFamily;
-    mSearchFamily = 0;
-    wireSearchNew(iFamily);
+    mSearchFamily = iFamily;
+}
+
+bool OneWireSearch::MatchSearchMode(uint8_t iFamily)
+{
+    bool lResult = false;
+    switch (mSearchMode)
+    {
+        case All:
+            lResult = true;
+            break;
+        case Family:
+            lResult = (iFamily == mSearchFamily);
+            break;
+        case NoFamily:
+            lResult = (iFamily != mSearchFamily);
+            break;
+        case Id:
+            lResult = false; //todo
+            break;
+        default:
+            break;
+    }
+    return lResult;
+}
+
+/****************************************
+ * Due to the fact, that 1W-Devices might disappear shortly from bus
+ * because of a short on the line or signal errors, we count such 
+ * events and do a state change only if the event lasts for a specific
+ * number of times (see cMaxCount)
+ * **************************************/
+void OneWireSearch::manageSearchCounter(OneWireSearch::SearchState iState) {
+    for (uint8_t i = 0; i < mBM->SensorCount(); i++)
+    {
+        if (MatchSearchMode(mBM->Sensor(i)->Family()))
+        {
+            switch (iState)
+            {
+                case SearchNew:
+                    mBM->Sensor(i)->incrementSearchCount();
+                    break;
+                case SearchFinished:
+                    // All sensors, which are not found, are disconnected
+                    mBM->Sensor(i)->setModeDisconnected();
+                    break;
+                case SearchError:
+                    mBM->Sensor(i)->clearSearchCount();
+                    break;
+                default:
+                    // do nothing
+                    break;
+            }
+        }
+    }
 }
 
 // async search, max blocking time 4 ms
-bool OneWireSearch::loop()
+OneWireSearch::SearchState OneWireSearch::loop()
 {
     uint8_t lStatus = 0;
-    bool lExitLoop = false;
+    OneWireSearch::SearchState lExitState = mSearchState;
 #ifdef DebugInfoSearch
     uint32_t lDuration = 0;
     mCurrDelay = millis();
@@ -53,6 +104,7 @@ bool OneWireSearch::loop()
 			mDuration = millis();
             mMaxDelay = 0;
 #endif
+            wireSearchNew();
             mSearchState = SearchReset;
             break;
         case SearchReset:
@@ -91,7 +143,7 @@ bool OneWireSearch::loop()
         case SearchEnd:
             // we do CRC check first
             if (mSearchResultId[7] == mBM->crc8(mSearchResultId, 7)) {
-                mBM->CreateOneWire(mSearchResultId);
+                if (MatchSearchMode(mSearchResultId[0])) mBM->CreateOneWire(mSearchResultId);
                 mSearchState = wireSearchEnd() ? SearchFinished : SearchReset;
             } else {
                 mSearchState = SearchError;
@@ -99,8 +151,8 @@ bool OneWireSearch::loop()
             mDelay = millis();
             break;
         case SearchFinished:
-            lExitLoop = true;
             wireSearchFinished(false);
+            mSearchState = SearchNew;
 #ifdef DebugInfoSearch
             mMaxDelay = max(mMaxDelay, millis() - mCurrDelay);
             lDuration = millis() - mDuration;
@@ -112,14 +164,13 @@ bool OneWireSearch::loop()
 #endif
             break;
         default:
-            lExitLoop = true;
             wireSearchFinished(true);
-            mSearchState = SearchError;
+            mSearchState = SearchNew;
             break;
     }
 #ifdef DebugInfoSearch
     mMaxDelay = max(mMaxDelay, millis() - mCurrDelay);
 #endif
-    return lExitLoop;
+    return lExitState;
 }
 

@@ -36,8 +36,8 @@ void OneWireDS18B20::loop() {
         }
         break;
     default:
-        // error case
-        mState = Error;
+        // error case, we stay here as long as there is a short on 1W-Line
+        mState = pBM->readStatusShortDet() ? Error : Idle;
         break;
     }
 }

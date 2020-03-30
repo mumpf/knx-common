@@ -46,26 +46,45 @@ void OneWireDS2482::loop()
     switch (mState)
 	{
         case Init:
-            mSearchPrio->newSearchAll();
+            mSearchPrio->newSearchFamily(MODEL_DS1990);
             mSearchNormal->newSearchAll();
             // mSearchNormal->newSearchNoFamily(MODEL_DS1990);
-            mState = SearchIButton;
+            mState = Startup;
             break;
-        // case Startup:
-		// 	// at startup we do an initial search to find all supported sensors
-        //     if (mSearchPrio->loop())
-        //     {
-        //         // search is finished, we have to find out if successful
-        //         mState = (mSearchPrio->state() == OneWireSearch::SearchFinished) ? PriorityBusUse : Error;
-        //     }
-        //     mDelay = millis();
-        //     break;
-		case SearchIButton:
-            if (mSearchPrio->loop())
+        case Startup:
+			// at startup we do an initial search to find all supported sensors
+            switch (mSearchNormal->loop())
             {
-                // search is finished, we have to find out if successful
-                mState = (mSearchPrio->state() == OneWireSearch::SearchFinished) ? ProcessIO : Error;
+                case OneWireSearchFirst::SearchFinished:
+                    mState = SearchIButton;
+                    mSearchNormal->newSearchNoFamily(MODEL_DS1990);
+                    break;
+                case OneWireSearchFirst::SearchError:
+                    mState = Error;
+                    break;
+                default:
+                    // do nothing, we stay in this state
+                    break;
             }
+            mDelay = millis();
+            break;
+		case SearchIButton:
+			switch (mSearchPrio->loop())
+			{
+                case OneWireSearchFirst::SearchEnd:
+                    mState = ProcessIO;
+                    break;
+                case OneWireSearchFirst::SearchFinished:
+                    mState = ProcessIO;
+                    break;
+                case OneWireSearchFirst::SearchError:
+                    mState = Error;
+                    break;
+                default:
+				    // do nothing, we stay in this state
+                    break;
+			}
+            // mState = ProcessIO;
             mDelay = millis();
             break;
         case ProcessIO:
@@ -78,23 +97,50 @@ void OneWireDS2482::loop()
             }
             break;
         case SearchNewDevices:
-            if (mSearchNormal->loop())
+            switch (mSearchNormal->loop())
             {
-                // search is finished, we have to find out if successful
-                mState = (mSearchNormal->state() == OneWireSearch::SearchFinished) ? Idle : Error;
+                case OneWireSearchFirst::SearchEnd:
+                    mState = Idle;
+                    break;
+                case OneWireSearchFirst::SearchFinished:
+                    mState = Idle;
+                    break;
+                case OneWireSearchFirst::SearchError:
+                    mState = Error;
+                    break;
+                default:
+                    // do nothing, we stay in this state
+                    break;
             }
+            // mState = Idle;
             mDelay = millis();
             break;
         case Idle:
             mState = SearchIButton;
-            mSearchNormal->newSearchAll();
+            // mSearchNormal->newSearchAll();
             // mSearchNormal->newSearchNoFamily(MODEL_DS1990);
-            mSearchPrio->newSearchFamily(MODEL_DS1990);
+            // mSearchPrio->newSearchFamily(MODEL_DS1990);
             mDelay = millis();
             break;
         default:
-		    // we wait a Moment and afterwards start over
-            mState = delayCheck(mDelay, 100) ? Idle : Error;
+            mState = Error;
+            // as long as there is a short, we stay in error state
+            bool lShortWire = readStatusShortDet();
+            if (lShortWire) {
+				if (delayCheck(mDelay, 10)) {
+                    wireReset();
+                    mDelay = millis();
+                }
+            } else {
+                // we wait a Moment and afterwards start over
+				if (delayCheck(mDelay, 10)) {
+                    mState = SearchIButton;
+					// reset all device counter
+                    mSearchPrio->manageSearchCounter(OneWireSearch::SearchError);
+                    mSearchNormal->manageSearchCounter(OneWireSearch::SearchError);
+                }
+				mState = delayCheck(mDelay, 10) ? SearchIButton : Error;
+			}
             break;
 	}
 }

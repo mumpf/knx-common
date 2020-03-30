@@ -4,7 +4,7 @@
 #include "OneWire.h"
 // #include <OneWireDS2482.h>
 
-#define DebugInfoSearch
+// #define DebugInfoSearch
 
 // forward declaration
 class OneWireDS2482;
@@ -33,11 +33,12 @@ class OneWireSearch
 
     OneWireSearch(OneWireDS2482 *iBM);
 
-    bool loop();
+    SearchState loop();
     void newSearchAll();
     void newSearchFamily(uint8_t iFamily);
     void newSearchNoFamily(uint8_t iNoFamily);
     void newSearchForId(tIdRef iId);
+    void manageSearchCounter(SearchState iState);
     SearchState state();
 
   protected:
@@ -63,8 +64,9 @@ class OneWireSearch
     int8_t mSearchLastZero = -1;
     uint8_t mSearchStep = 0;
     uint8_t mSearchFamily = 0;
-    
-    virtual void wireSearchNew(uint8_t iFamilyCode = 0) = 0;
+
+    bool MatchSearchMode(uint8_t iFamily);
+    virtual void wireSearchNew() = 0;
     virtual void wireSearchReset() = 0;
     virtual bool wireSearchStart(uint8_t iStatus) = 0;
     virtual bool wireSearchStep(uint8_t iStep) = 0;

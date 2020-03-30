@@ -9,8 +9,7 @@ class OneWireSearchFirst : public OneWireSearch
     OneWireSearchFirst(OneWireDS2482 *iBM);
 
   protected:
-    bool ChangeSensorExistence(OneWire *iSensor);
-    void wireSearchNew(uint8_t iFamilyCode = 0) override;
+    void wireSearchNew() override;
     void wireSearchReset() override;
     bool wireSearchStart(uint8_t iStatus) override;
     bool wireSearchStep(uint8_t iStep) override;
