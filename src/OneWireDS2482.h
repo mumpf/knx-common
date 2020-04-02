@@ -102,6 +102,7 @@ class OneWireDS2482
     uint8_t readByte();
 
   private:
+    bool ProcessPriorityBusUse();
     bool ProcessNormalBusUse();
 
     OneWireSearch *mSearchPrio = NULL;

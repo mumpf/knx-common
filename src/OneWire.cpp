@@ -65,6 +65,18 @@ void OneWire::wireSelectThisDevice() {
     pBM->wireSelect(pId);
 }
 
-bool OneWire::getValue(float &eValue) {
-    return 0;
+bool OneWire::getValue(float& eValue)
+{
+    return false;
+}
+
+bool OneWire::getValue(uint8_t& eValue)
+{
+    return false;
+}
+
+bool OneWire::setValue(uint8_t iValue)
+{
+    // do nothing, should be overridden for devices with output capabilities
+    return false;
 }

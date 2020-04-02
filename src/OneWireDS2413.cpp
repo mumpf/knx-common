@@ -12,14 +12,32 @@ void OneWireDS2413::init()
 }
 
 void OneWireDS2413::loop() {
-  switch (mState) 
-  {
-  case Startup:
-      mState = Idle;
-      break;
-  
-  default:
-    break;
+    switch (mState) {
+        case Startup:
+            mState = Idle;
+            // somehow we have to set the IO bitmask...
+            mLastValue = getState();
+            break;
+        case SendOutput:
+            // open: do we need specific output handling
+        case GetInput:
+            // open: do we need specific input handling
+        case Idle:
+            // first find out, if we have to write
+            if (mValue != mLastValue) {
+                // mValue was changed by external call, we have to write this to the 1W bus
+                setState(mValue);
+                // afterwards mValue and mLastvalue are equal and mValue contains the state info
+                // so we need not to read anymore from 1W-Bus
+            } else {
+                // we do not have to write, so we will read inputs from 1W bus
+                mValue = getState();
+            }
+            mLastValue = mValue;
+            break;
+
+        default:
+            break;
   }
 }
 
@@ -47,7 +65,19 @@ bool OneWireDS2413::setState(uint8_t iState) {
     pBM->wireWriteByte(DS2413_CHANNEL_WRITE_CMD);
     pBM->wireWriteByte(iState);
     pBM->wireWriteByte(~iState);
-    if (pBM->wireReadByte() == 0xAA && pBM->wireReadByte() == iState)
+    if (pBM->wireReadByte() == 0xAA && pBM->wireReadByte() == iState) {
+        mValue = iState;
         return true;
+    }
     return false;
+}
+
+bool OneWireDS2413::setValue(uint8_t iValue) {
+    mValue = iValue;
+    return Mode() == Connected;
+}
+
+bool OneWireDS2413::getValue(uint8_t &eValue) {
+    eValue = mValue;
+    return Mode() == Connected;
 }

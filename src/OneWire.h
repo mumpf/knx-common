@@ -57,6 +57,8 @@ class OneWire {
     void incrementSearchCount();
     void clearSearchCount();
     virtual bool getValue(float &eValue);
+    virtual bool getValue(uint8_t &eValue);
+    virtual bool setValue(uint8_t iValue);
 
   protected:
     void wireSelectThisDevice();

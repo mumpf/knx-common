@@ -33,7 +33,7 @@ void OneWireSearchFirst::wireSearchNew()
     mBM->clearStrongPullup();
 }
 
-void OneWireSearchFirst::wireSearchReset() {
+void OneWireSearchFirst::wireSearchNext() {
     mBM->waitOnBusy();
     mBM->begin();
     mBM->writeByte(DS2482_COMMAND_RESETWIRE);

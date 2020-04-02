@@ -105,10 +105,10 @@ OneWireSearch::SearchState OneWireSearch::loop()
             mMaxDelay = 0;
 #endif
             wireSearchNew();
-            mSearchState = SearchReset;
+            mSearchState = SearchNext;
             break;
-        case SearchReset:
-            wireSearchReset();
+        case SearchNext:
+            wireSearchNext();
             mSearchState = SearchStart;
             mDelay = millis();
             break;
@@ -144,7 +144,7 @@ OneWireSearch::SearchState OneWireSearch::loop()
             // we do CRC check first
             if (mSearchResultId[7] == mBM->crc8(mSearchResultId, 7)) {
                 if (MatchSearchMode(mSearchResultId[0])) mBM->CreateOneWire(mSearchResultId);
-                mSearchState = wireSearchEnd() ? SearchFinished : SearchReset;
+                mSearchState = wireSearchEnd() ? SearchFinished : SearchNext;
             } else {
                 mSearchState = SearchError;
             }

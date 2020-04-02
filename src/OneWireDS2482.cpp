@@ -88,13 +88,12 @@ void OneWireDS2482::loop()
             mDelay = millis();
             break;
         case ProcessIO:
+            ProcessPriorityBusUse();
             mState = ProcessSensors;
             break;
         case ProcessSensors:
-            if (ProcessNormalBusUse())
-            {
-                mState = SearchNewDevices;
-            }
+            ProcessNormalBusUse();
+			mState = SearchNewDevices;
             break;
         case SearchNewDevices:
             switch (mSearchNormal->loop())
@@ -139,23 +138,44 @@ void OneWireDS2482::loop()
                     mSearchPrio->manageSearchCounter(OneWireSearch::SearchError);
                     mSearchNormal->manageSearchCounter(OneWireSearch::SearchError);
                 }
-				mState = delayCheck(mDelay, 10) ? SearchIButton : Error;
 			}
             break;
 	}
 }
 
 // returns false while the method iterates thrugh sensor list, true if finished the list
+bool OneWireDS2482::ProcessPriorityBusUse()
+{
+    static int8_t sSensorIndex = 0;
+    bool lFound = false;
+    // priority use means to evaluate a Priority sensor with each iternation 
+	// so we search for a prio sensor and do the according action
+	while (sSensorIndex < mSensorCount && !lFound) {
+	    OneWire *lSensor = mSensor[sSensorIndex++];
+		if (lSensor->Family() == MODEL_DS2413 && lSensor->Mode() == OneWire::Connected) {
+			lSensor->loop();
+            lFound = true;
+        }
+	}
+    if (sSensorIndex >= mSensorCount)
+        sSensorIndex = 0;
+    return (sSensorIndex == 0);
+}
+
+// returns false while the method iterates thrugh sensor list, true if finished the list
 bool OneWireDS2482::ProcessNormalBusUse()
 {
     static int8_t sSensorIndex = 0;
-	if (sSensorIndex >= mSensorCount)
+    if (sSensorIndex >= mSensorCount) {
+        sSensorIndex = 0;
         return true; // no sensors available or wrong sensor index
+	}
     OneWire *lSensor = mSensor[sSensorIndex++];
-    if (lSensor->Family() == MODEL_DS18B20  && lSensor->Mode() == OneWire::Connected) {
+    if (lSensor->Family() == MODEL_DS18B20 && lSensor->Mode() == OneWire::Connected)
+    {
         lSensor->loop();
     }
-	if (sSensorIndex >= mSensorCount)
+    if (sSensorIndex >= mSensorCount)
         sSensorIndex = 0;
     return (sSensorIndex == 0);
 }

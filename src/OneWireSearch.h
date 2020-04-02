@@ -16,7 +16,7 @@ class OneWireSearch
     enum SearchState
     {
         SearchNew,
-        SearchReset,
+        SearchNext,
         SearchStart,
         SearchStep,
         SearchEnd,
@@ -67,7 +67,7 @@ class OneWireSearch
 
     bool MatchSearchMode(uint8_t iFamily);
     virtual void wireSearchNew() = 0;
-    virtual void wireSearchReset() = 0;
+    virtual void wireSearchNext() = 0;
     virtual bool wireSearchStart(uint8_t iStatus) = 0;
     virtual bool wireSearchStep(uint8_t iStep) = 0;
     virtual bool wireSearchEnd() = 0;

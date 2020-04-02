@@ -10,7 +10,7 @@ class OneWireSearchFirst : public OneWireSearch
 
   protected:
     void wireSearchNew() override;
-    void wireSearchReset() override;
+    void wireSearchNext() override;
     bool wireSearchStart(uint8_t iStatus) override;
     bool wireSearchStep(uint8_t iStep) override;
     bool wireSearchEnd() override;
