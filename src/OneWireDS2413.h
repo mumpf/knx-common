@@ -25,6 +25,7 @@ class OneWireDS2413 : public OneWire
     {
         Startup,
         GetInput,
+        GetStatus,
         SendOutput,
         Idle,
         Error
@@ -35,14 +36,17 @@ class OneWireDS2413 : public OneWire
     void init();
     void loop() override;
 
+    uint8_t convertStateToValue(uint8_t iValue);
     uint8_t getState();
     bool setState(uint8_t iState);
 
-    bool getValue(uint8_t &eValue) override;
-    bool setValue(uint8_t iValue) override;
+    bool getValue(uint8_t &eValue, ModelFunction iModelFunction) override;
+    bool setValue(uint8_t iValue, ModelFunction iModelFunction) override;
+    bool setParameter(ModelParameter iModelParameter, uint8_t iValue) override;
 
   private:
     uint8_t mState = Startup;
     uint8_t mValue = 0;
     uint8_t mLastValue = 0;
+    uint8_t mIoMask = 0; // no input, just ouput
 };

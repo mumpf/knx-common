@@ -63,7 +63,7 @@ bool OneWireSearch::MatchSearchMode(uint8_t iFamily)
  * number of times (see cMaxCount)
  * **************************************/
 void OneWireSearch::manageSearchCounter(OneWireSearch::SearchState iState) {
-    for (uint8_t i = 0; i < mBM->SensorCount(); i++)
+    for (uint8_t i = 0; i < mBM->DeviceCount(); i++)
     {
         if (MatchSearchMode(mBM->Sensor(i)->Family()))
         {

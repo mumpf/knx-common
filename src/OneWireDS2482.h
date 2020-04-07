@@ -69,7 +69,7 @@ class OneWireDS2482
     uint8_t checkI2cPresence();
 
     OneWire *Sensor(uint8_t iIndex);
-    uint8_t SensorCount();
+    uint8_t DeviceCount();
 
     //DS2482-800 only
     bool selectChannel(uint8_t channel);
@@ -116,5 +116,5 @@ class OneWireDS2482
     uint32_t mDelay = 0;
 
     OneWire *mSensor[30];
-    uint8_t mSensorCount = 0;
+    uint8_t mDeviceCount = 0;
 };

@@ -150,14 +150,14 @@ bool OneWireDS2482::ProcessPriorityBusUse()
     bool lFound = false;
     // priority use means to evaluate a Priority sensor with each iternation 
 	// so we search for a prio sensor and do the according action
-	while (sSensorIndex < mSensorCount && !lFound) {
+	while (sSensorIndex < mDeviceCount && !lFound) {
 	    OneWire *lSensor = mSensor[sSensorIndex++];
 		if (lSensor->Family() == MODEL_DS2413 && lSensor->Mode() == OneWire::Connected) {
 			lSensor->loop();
             lFound = true;
         }
 	}
-    if (sSensorIndex >= mSensorCount)
+    if (sSensorIndex >= mDeviceCount)
         sSensorIndex = 0;
     return (sSensorIndex == 0);
 }
@@ -166,7 +166,7 @@ bool OneWireDS2482::ProcessPriorityBusUse()
 bool OneWireDS2482::ProcessNormalBusUse()
 {
     static int8_t sSensorIndex = 0;
-    if (sSensorIndex >= mSensorCount) {
+    if (sSensorIndex >= mDeviceCount) {
         sSensorIndex = 0;
         return true; // no sensors available or wrong sensor index
 	}
@@ -175,7 +175,7 @@ bool OneWireDS2482::ProcessNormalBusUse()
     {
         lSensor->loop();
     }
-    if (sSensorIndex >= mSensorCount)
+    if (sSensorIndex >= mDeviceCount)
         sSensorIndex = 0;
     return (sSensorIndex == 0);
 }
@@ -186,7 +186,7 @@ OneWire *OneWireDS2482::CreateOneWire(tIdRef iId) {
     OneWire *lSensor = NULL;
 
     // check if Sensor exists
-	for (uint8_t i = 0; i < mSensorCount; i++)
+	for (uint8_t i = 0; i < mDeviceCount; i++)
 	{
 		if (equalId(mSensor[i]->Id(), iId)) {
             lSensor = mSensor[i];
@@ -222,23 +222,23 @@ OneWire *OneWireDS2482::CreateOneWire(tIdRef iId) {
 		if (lSensor != NULL) {
 			if (fNewIdCallback != 0)
 				fNewIdCallback(lSensor);
-			mSensor[mSensorCount++] = lSensor;
-			if (mSensorCount == 30)
-				mSensorCount--;
+			mSensor[mDeviceCount++] = lSensor;
+			if (mDeviceCount == 30)
+				mDeviceCount--;
         }
 	}
     return lSensor;
 }
 
 OneWire *OneWireDS2482::Sensor(uint8_t iIndex){
-    if (iIndex < mSensorCount)
+    if (iIndex < mDeviceCount)
         return mSensor[iIndex];
 	else
         return NULL;
 }
 
-uint8_t OneWireDS2482::SensorCount() {
-    return mSensorCount;
+uint8_t OneWireDS2482::DeviceCount() {
+    return mDeviceCount;
 }
 
 // Just for the DS2482-800
