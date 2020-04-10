@@ -76,7 +76,9 @@
 #endif
 
 // board independent definitions
-#define BUZZER_FREQ 2400
+#define BUZZER_FREQ_LOUD 2400
+#define BUZZER_FREQ_NORMAL 4000
+#define BUZZER_FREQ_SILENT 1500
 
 // // EEPROM Support
 // #define I2C_EEPROM_DEVICE_ADDRESSS 0x50 // Address of 24LC256 eeprom chip

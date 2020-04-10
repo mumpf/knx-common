@@ -6,7 +6,7 @@ class SensorIAQCore : public Sensor
 {
 
   protected:
-    double measureValue(MeasureType iMeasureType) override;
+    float measureValue(MeasureType iMeasureType) override;
 
   public:
     SensorIAQCore(uint8_t iMeasureTypes, uint8_t iAddress);
