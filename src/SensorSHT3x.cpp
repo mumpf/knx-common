@@ -13,13 +13,17 @@ void SensorSHT3x::sensorLoopInternal()
             Sensor::sensorLoopInternal();
             break;
         case Calibrate:
+            writeCommand(SHT3X_MEAS_HIGHREP);
             Sensor::sensorLoopInternal();
             break;
         case Finalize:
-            Sensor::sensorLoopInternal();
-            // start first measurement
-            writeCommand(SHT3X_MEAS_HIGHREP);
-            sCommandSent = millis();
+            if (delayCheck(pSensorStateDelay, 100)) {
+                // start first measurement
+                getTempHum();
+                sCommandSent = 0;
+                gSensorState = Running;
+                pSensorStateDelay = millis();
+            }
             break;
         case Running:
             // quick hack: We use a static member to toggle between aquirering values and fetching them
