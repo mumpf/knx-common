@@ -4,8 +4,15 @@
 
 class SensorIAQCore : public Sensor
 {
+  private:
+    uint8_t mBuffer[IAQCORE_READ_ALL];
+    bool getSensorData();
 
   protected:
+    float mCo2 = NAN;
+    float mVoc = NAN;
+    
+    void sensorLoopInternal() override;
     float measureValue(MeasureType iMeasureType) override;
 
   public:
