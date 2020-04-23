@@ -130,8 +130,8 @@
 #define ACR0_FLAG_TRIGEN           0x08
 #define ACR0_FLAG_V20VCLIMIT       0x04
 
-
-// check board hardware availibility
+// call this BEFORE Wire.begin()
+// it clears I2C Bus, calls Wire.begin() and checks which board hardware is available
 bool boardCheck();
 // Turn off 5V rail from NCN5130 to save power for EEPROM write during knx save operation
 void savePower();
@@ -139,3 +139,5 @@ void savePower();
 void restorePower();
 
 void fatalError(uint8_t iErrorCode, const char *iErrorText = 0);
+
+uint8_t clearI2cBus();
