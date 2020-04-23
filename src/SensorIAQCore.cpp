@@ -15,21 +15,21 @@ void SensorIAQCore::sensorLoopInternal()
             Sensor::sensorLoopInternal();
             break;
         case Finalize:
-            if (delayCheck(gSensorStateDelay, 1000)) {
+            if (delayCheck(pSensorStateDelay, 1000)) {
                 // start first measurement
                 if (getSensorData()) 
                     gSensorState = Running;
-                gSensorStateDelay = millis();
+                pSensorStateDelay = millis();
             }
             break;
         case Running:
-            if (delayCheck(gSensorStateDelay, 2000)) {
+            if (delayCheck(pSensorStateDelay, 2000)) {
                 getSensorData();
-                gSensorStateDelay = millis();
+                pSensorStateDelay = millis();
             }
             break;
         default:
-            gSensorStateDelay = millis();
+            pSensorStateDelay = millis();
             break;
     }
 }
