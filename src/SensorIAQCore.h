@@ -1,6 +1,22 @@
 #pragma once
-#include <IAQCore.h>
 #include "Sensor.h"
+
+#define IAQCORE_I2C_ADDR (0x5A)
+
+// Bytes to read
+#define IAQCORE_READ_ALL (9)
+
+// Status codes
+#define IAQCORE_STATUS_OK (0x00)
+#define IAQCORE_STATUS_RUNIN (0x10)
+#define IAQCORE_STATUS_BUSY (0x01)
+#define IAQCORE_STATUS_ERROR (0x80)
+// Memory addressing
+#define IAQCORE_CO2_PREDICTION_MSB_OFFSET (0x00)
+#define IAQCORE_CO2_PREDICTION_LSB_OFFSET (0x01)
+#define IAQCORE_STATUS_OFFSET (0x02)
+#define IAQCORE_TVOC_PREDICTION_MSB_OFFSET (0x07)
+#define IAQCORE_TVOC_PREDICTION_LSB_OFFSET (0x08)
 
 class SensorIAQCore : public Sensor
 {
