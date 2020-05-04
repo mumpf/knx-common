@@ -24,9 +24,11 @@
 #define PROG_BUTTON_PIN_INTERRUPT_ON FALLING
 #define SAVE_INTERRUPT_PIN 8
 #define LED_YELLOW_PIN 38
+#define COUNT_1WIRE_BUSMASTER 1
+#define COUNT_1WIRE_CHANNEL 30
 // Buzzer
 #define BUZZER_PIN 9
-#define I2C_1WIRE_DEVICE_ADDRESSS 0x1A  // Address of DS2484 1-Wire-Busmaster chip
+#define I2C_1WIRE_DEVICE_ADDRESSS 0x1A  // Address of DS2482 1-Wire-Busmaster chip
 #define I2C_EEPROM_DEVICE_ADDRESSS 0x50 // Address of 24LC256 eeprom chip
 #define I2C_RGBLED_DEVICE_ADDRESS 0x60  // Address of PCA9632 RBGW-LED-Driver
 #endif
@@ -37,6 +39,8 @@
 #define PROG_BUTTON_PIN_INTERRUPT_ON FALLING
 #define SAVE_INTERRUPT_PIN 8
 #define LED_YELLOW_PIN 38
+#define COUNT_1WIRE_BUSMASTER 1
+#define COUNT_1WIRE_CHANNEL 30
 // Buzzer
 #define BUZZER_PIN 9
 #define I2C_1WIRE_DEVICE_ADDRESSS 0x18 // Address of DS2484 1-Wire-Busmaster chip
@@ -50,6 +54,8 @@
 #define PROG_BUTTON_PIN_INTERRUPT_ON FALLING
 #define SAVE_INTERRUPT_PIN A2 // 8
 #define LED_YELLOW_PIN 38
+#define COUNT_1WIRE_BUSMASTER 1
+#define COUNT_1WIRE_CHANNEL 30
 // Buzzer
 #define BUZZER_PIN 9
 #define I2C_1WIRE_DEVICE_ADDRESSS 0x18  // Address of DS2484 1-Wire-Busmaster chip
@@ -71,7 +77,9 @@
 #define PROG_BUTTON_PIN A1
 #define PROG_BUTTON_PIN_INTERRUPT_ON FALLING
 #define LED_YELLOW_PIN 25
-#define I2C_1WIRE_DEVICE_ADDRESSS 0x18  // Address of DS2484 1-Wire-Busmaster chip
+#define COUNT_1WIRE_BUSMASTER 3
+#define COUNT_1WIRE_CHANNEL 90
+#define I2C_1WIRE_DEVICE_ADDRESSS 0x18 // Address of DS2484 1-Wire-Busmaster chip
 #define I2C_EEPROM_DEVICE_ADDRESSS 0x50 // Address of 24LC256 eeprom chip
 #endif
 
