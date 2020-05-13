@@ -67,7 +67,7 @@ class OneWireDS18B20 : public OneWire
     void init( bool iIsActive );
 
     float getTemp();
-    bool getValue(float &eValue, ModelFunction iModelFunction) override;
+    bool getValue(float &eValue, uint8_t iModelFunction) override;
 
     void isActive(bool iState);
     bool isActive();

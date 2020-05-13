@@ -65,23 +65,23 @@ void OneWire::wireSelectThisDevice() {
     pBM->wireSelect(pId);
 }
 
-bool OneWire::getValue(float& eValue, ModelFunction iModelFunction)
+bool OneWire::getValue(float& eValue, uint8_t iModelFunction)
 {
     return false;
 }
 
-bool OneWire::getValue(uint8_t& eValue, ModelFunction iModelFunction)
+bool OneWire::getValue(uint8_t& eValue, uint8_t iModelFunction)
 {
     return false;
 }
 
-bool OneWire::setValue(uint8_t iValue, ModelFunction iModelFunction)
+bool OneWire::setValue(uint8_t iValue, uint8_t iModelFunction)
 {
     // do nothing, should be overridden for devices with output capabilities
     return false;
 }
 
-bool OneWire::setParameter(OneWire::ModelParameter iModelParameter, uint8_t iValue) {
+bool OneWire::setParameter(OneWire::ModelParameter iModelParameter, uint8_t iValue, uint8_t iModelFunction) {
     // default implementation for devices without parameters
     return false;
 }

@@ -62,28 +62,38 @@ void OneWireDS2413::loop() {
   }
 }
 
-bool OneWireDS2413::setParameter(OneWire::ModelParameter iModelParameter, uint8_t iValue)
-{
-    // default implementation for devices without parameters
-    if (iModelParameter == IoMask) {
-        // if an IOMast is set, we use it here, 1 is Input, 0 is Ouput;
-        mIoMask = iValue & ~PIO_WRITE_MASK;
-        return true;
+bool OneWireDS2413::setParameter(OneWire::ModelParameter iModelParameter, uint8_t iValue, uint8_t iModelFunction) {
+    bool lResult = false;
+    uint8_t lValue = iValue & ~PIO_WRITE_MASK;
+    uint8_t lBit = (1 << (iModelFunction - 1));
+    switch (iModelParameter) {
+        case IoMask:
+            // if an IOMask is set, we use it here, 1 is Input, 0 is Ouput;
+            if (iModelFunction == ModelFunction_IoByte || iModelFunction == ModelFunction_Default) {
+                mIoMask = lValue;
+                lResult = true;
+            } else if (iModelFunction >= ModelFunction_IoBit0 && iModelFunction <= ModelFunction_IoBit1) {
+                mIoMask &= ~lBit;
+                mIoMask |= (lValue & lBit);
+                lResult = true;
+            }
+            break;
+        case IoInvertMask:
+            // if an IoInvertMask is set, we use it here, 1 is invert, 0 is normal;
+            if (iModelFunction == ModelFunction_IoByte || iModelFunction == ModelFunction_Default) {
+                mIoInvertMask = lValue;
+                lResult = true;
+            } else if (iModelFunction >= ModelFunction_IoBit0 && iModelFunction <= ModelFunction_IoBit1) {
+                mIoInvertMask &= ~lBit;
+                mIoInvertMask |= (lValue & lBit);
+                lResult = true;
+            }
+            break;
+        default:
+            break;
     }
-    return false;
+    return lResult;
 }
-
-// bool OneWireDS2413::set_LED_DS2413(uint8_t led, bool state) {
-
-//   byte temp = get_state();
-
-//   if (state)
-//     bitClear(temp, led);
-//   else
-//     bitSet(temp, led);
-
-//    return set_state(temp);
-// }
 
 uint8_t OneWireDS2413::convertStateToValue(uint8_t iValue){
     uint8_t lResult = ((iValue & PIOB_STATE_INPUT_BIT) >> 1) | (iValue & PIOA_STATE_INPUT_BIT);
@@ -117,18 +127,19 @@ bool OneWireDS2413::setState(uint8_t iState) {
     return false;
 }
 
-bool OneWireDS2413::setValue(uint8_t iValue, ModelFunction iModelFunction)
+bool OneWireDS2413::setValue(uint8_t iValue, uint8_t iModelFunction)
 {
     // we set here the output according to given model funtion as byte or bit
     bool lResult = (Mode() == Connected);
     if (lResult) {
-        if (iModelFunction == IoByte || iModelFunction == Default) {
-            mValue = iValue & ~PIO_WRITE_MASK;
-        } else if (iModelFunction < IoByte && iModelFunction <= IoBit1) {
-            if (iValue) {
-                mValue |= (1 << (iModelFunction - 1));
+        if (iModelFunction == ModelFunction_IoByte || iModelFunction == ModelFunction_Default) {
+            mValue = (iValue & ~PIO_WRITE_MASK) ^ mIoInvertMask;
+        } else if (iModelFunction >= ModelFunction_IoBit0 && iModelFunction <= ModelFunction_IoBit1) {
+            uint8_t lBit = (1 << (iModelFunction - 1));
+            if (iValue != ((mIoInvertMask & lBit) ? 1 : 0)) {
+                mValue |= lBit;
             } else {
-                mValue &= ~(1 << (iModelFunction - 1));
+                mValue &= ~lBit;
             }
         } else {
             lResult = false;
@@ -140,22 +151,18 @@ bool OneWireDS2413::setValue(uint8_t iValue, ModelFunction iModelFunction)
     return lResult;
 }
 
-bool OneWireDS2413::getValue(uint8_t &eValue, ModelFunction iModelFunction)
+bool OneWireDS2413::getValue(uint8_t &eValue, uint8_t iModelFunction)
 {
     // we get here the input according to given model funtion as byte or bit
     bool lResult = (Mode() == Connected);
     if (lResult)
     {
-        if (iModelFunction == IoByte || iModelFunction == Default)
-        {
-            eValue = mValue;
-        }
-        else if (iModelFunction < IoByte && iModelFunction <= IoBit1)
-        {
-            eValue = (mValue & (1 << (iModelFunction - 1))) ? 1 : 0;
-        }
-        else
-        {
+        if (iModelFunction == ModelFunction_IoByte || iModelFunction == ModelFunction_Default) {
+            eValue = mValue ^ mIoInvertMask;
+        } else if (iModelFunction >= ModelFunction_IoBit0 && iModelFunction <= ModelFunction_IoBit1) {
+            uint8_t lBit = (1 << (iModelFunction - 1));
+            eValue = (mValue & lBit) ^ (mIoInvertMask & lBit) ? 1 : 0;
+        } else {
             lResult = false;
         }
     }

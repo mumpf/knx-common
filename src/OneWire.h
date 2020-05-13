@@ -23,6 +23,23 @@
 #define MODEL_DS2408 0x29   // 8-Channel IO
 #define MODEL_DS1990 0x01   // iButton
 
+#define ModelFunction_Default 0
+#define ModelFunction_IoBit0  1
+#define ModelFunction_IoBit1  2
+#define ModelFunction_IoBit2  3
+#define ModelFunction_IoBit3  4
+#define ModelFunction_IoBit4  5
+#define ModelFunction_IoBit5  6
+#define ModelFunction_IoBit6  7
+#define ModelFunction_IoBit7  8
+#define ModelFunction_IoByte  9
+#define ModelFunction_TemperatureOnChip 10
+#define ModelFunction_TemperatureNTC    11
+#define ModelFunction_Humidity 12
+#define ModelFunction_Brightness 13
+#define ModelFunction_CustomMin 50
+#define ModelFunction_CustomMax 79
+
 // we store only 7 Bytes for Id, because byte 8 is CRC and just important for bus data transfer
 typedef uint8_t tId[7];
 typedef uint8_t *tIdRef;
@@ -41,23 +58,6 @@ class OneWire {
         New,    // Sensor on 1W bus, but not known by application
         Connected,  // Sensor on 1W bus and known by application
         Disconnected // Sensor removed from 1W bus, but known by appliation
-    };
-
-    enum ModelFunction
-    {
-        Default = 0,
-        IoBit0 = 1,
-        IoBit1 = 2,
-        IoBit2 = 3,
-        IoBit3 = 4,
-        IoBit4 = 5,
-        IoBit5 = 6,
-        IoBit6 = 7,
-        IoBit7 = 8,
-        IoByte = 9,
-        Temperature,
-        Analog1,
-        Analog2
     };
 
     enum ModelParameter
@@ -79,10 +79,10 @@ class OneWire {
     void setModeDisconnected(bool iForce = false);
     void incrementSearchCount();
     void clearSearchCount();
-    virtual bool getValue(float &eValue, ModelFunction iModelFunction);
-    virtual bool getValue(uint8_t &eValue, ModelFunction iModelFunction);
-    virtual bool setValue(uint8_t iValue, ModelFunction iModelFunction);
-    virtual bool setParameter(ModelParameter iModelParameter, uint8_t iValue);
+    virtual bool getValue(float &eValue, uint8_t iModelFunction);
+    virtual bool getValue(uint8_t &eValue, uint8_t iModelFunction);
+    virtual bool setValue(uint8_t iValue, uint8_t iModelFunction);
+    virtual bool setParameter(ModelParameter iModelParameter, uint8_t iValue, uint8_t iModelFunction);
 
   protected:
     void wireSelectThisDevice();

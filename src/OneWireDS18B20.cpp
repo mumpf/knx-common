@@ -66,7 +66,7 @@ float OneWireDS18B20::getTemp()
     return mTemp;
 }
 
-bool OneWireDS18B20::getValue(float& eValue, ModelFunction iModelFunction)
+bool OneWireDS18B20::getValue(float& eValue, uint8_t iModelFunction)
 {
     // there is just one model function, so we ignore the parameter
     eValue = mTemp;
