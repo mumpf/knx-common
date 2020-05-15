@@ -48,8 +48,6 @@
 #define RESET_ON            0x0
 #define RESET_OFF           0x1
 
-#define PIO_WRITE_MASK      0x00
-
 // Control modes
 #define SEARCH_TRIGGER(mode)      (mode<<SEARCH_TRIGGER_BIT)
 #define SEARCH_TERM(mode)         (mode<<SEARCH_TERM_BIT)
@@ -77,7 +75,6 @@ class OneWireDS2408 : public OneWire
     void init();
     void loop() override;
 
-    uint8_t convertStateToValue(uint8_t iValue);
     uint8_t getState();
     bool setState(uint8_t iState);
 
