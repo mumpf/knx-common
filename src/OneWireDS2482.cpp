@@ -32,13 +32,15 @@ OneWireDS2482::OneWireDS2482(foundNewId iNewIdCallback) : OneWireDS2482(0, iNewI
     // mError = 0;
 }
 
-void OneWireDS2482::setup()
+void OneWireDS2482::setup(bool iSearchNewDevices, bool iSearchIButtons)
 {
     deviceReset();
     setActivePullup();
     setStrongPullup();
 
     mState = Init;
+    mSearchNewDevices = iSearchNewDevices;
+    mSearchIButton = iSearchIButtons;
 }
 
 void OneWireDS2482::loop()
@@ -68,25 +70,29 @@ void OneWireDS2482::loop()
             }
             mDelay = millis();
             break;
-		case SearchIButton:
+		case SearchIButton: {
+            if (mSearchIButton) {
 			switch (mSearchPrio->loop())
-			{
-                case OneWireSearchFirst::SearchEnd:
-                    mState = ProcessIO;
-                    break;
-                case OneWireSearchFirst::SearchFinished:
-                    mState = ProcessIO;
-                    break;
-                case OneWireSearchFirst::SearchError:
-                    mState = Error;
-                    break;
-                default:
-				    // do nothing, we stay in this state
-                    break;
-			}
-            // mState = ProcessIO;
+                {
+                    case OneWireSearchFirst::SearchEnd:
+                        mState = ProcessIO;
+                        break;
+                    case OneWireSearchFirst::SearchFinished:
+                        mState = ProcessIO;
+                        break;
+                    case OneWireSearchFirst::SearchError:
+                        mState = Error;
+                        break;
+                    default:
+                        // do nothing, we stay in this state
+                        break;
+                }
+            } else {
+                mState = ProcessIO;
+            }
             mDelay = millis();
             break;
+        }
         case ProcessIO:
             ProcessPriorityBusUse();
             mState = ProcessSensors;
@@ -96,22 +102,25 @@ void OneWireDS2482::loop()
 			mState = SearchNewDevices;
             break;
         case SearchNewDevices:
-            switch (mSearchNormal->loop())
-            {
-                case OneWireSearchFirst::SearchEnd:
-                    mState = Idle;
-                    break;
-                case OneWireSearchFirst::SearchFinished:
-                    mState = Idle;
-                    break;
-                case OneWireSearchFirst::SearchError:
-                    mState = Error;
-                    break;
-                default:
-                    // do nothing, we stay in this state
-                    break;
+            if (mSearchNewDevices) {
+                switch (mSearchNormal->loop())
+                {
+                    case OneWireSearchFirst::SearchEnd:
+                        mState = Idle;
+                        break;
+                    case OneWireSearchFirst::SearchFinished:
+                        mState = Idle;
+                        break;
+                    case OneWireSearchFirst::SearchError:
+                        mState = Error;
+                        break;
+                    default:
+                        // do nothing, we stay in this state
+                        break;
+                }
+            } else {
+                mState = Idle;
             }
-            // mState = Idle;
             mDelay = millis();
             break;
         case Idle:
@@ -152,7 +161,7 @@ bool OneWireDS2482::ProcessPriorityBusUse()
 	// so we search for a prio sensor and do the according action
 	while (sSensorIndex < mDeviceCount && !lFound) {
 	    OneWire *lSensor = mSensor[sSensorIndex++];
-		if (lSensor->Family() == MODEL_DS2413 && lSensor->Mode() == OneWire::Connected) {
+		if (lSensor->Prio() == OneWire::PrioNormal && lSensor->Mode() == OneWire::Connected) {
 			lSensor->loop();
             lFound = true;
         }
@@ -171,7 +180,7 @@ bool OneWireDS2482::ProcessNormalBusUse()
         return true; // no sensors available or wrong sensor index
 	}
     OneWire *lSensor = mSensor[sSensorIndex++];
-    if (lSensor->Family() == MODEL_DS18B20 && lSensor->Mode() == OneWire::Connected)
+    if (lSensor->Prio() == OneWire::PrioLow && lSensor->Mode() == OneWire::Connected)
     {
         lSensor->loop();
     }

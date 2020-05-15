@@ -5,6 +5,7 @@
 #include "OneWireDS2413.h"
 
 OneWireDS2413::OneWireDS2413(OneWireDS2482 *iBM, tIdRef iId) : OneWire(iBM, iId){
+    pPrio = PrioNormal;
 };
 
 void OneWireDS2413::init()
@@ -60,39 +61,6 @@ void OneWireDS2413::loop() {
         default:
             break;
   }
-}
-
-bool OneWireDS2413::setParameter(OneWire::ModelParameter iModelParameter, uint8_t iValue, uint8_t iModelFunction) {
-    bool lResult = false;
-    uint8_t lValue = iValue & ~PIO_WRITE_MASK;
-    uint8_t lBit = (1 << (iModelFunction - 1));
-    switch (iModelParameter) {
-        case IoMask:
-            // if an IOMask is set, we use it here, 1 is Input, 0 is Ouput;
-            if (iModelFunction == ModelFunction_IoByte || iModelFunction == ModelFunction_Default) {
-                mIoMask = lValue;
-                lResult = true;
-            } else if (iModelFunction >= ModelFunction_IoBit0 && iModelFunction <= ModelFunction_IoBit1) {
-                mIoMask &= ~lBit;
-                mIoMask |= (lValue & lBit);
-                lResult = true;
-            }
-            break;
-        case IoInvertMask:
-            // if an IoInvertMask is set, we use it here, 1 is invert, 0 is normal;
-            if (iModelFunction == ModelFunction_IoByte || iModelFunction == ModelFunction_Default) {
-                mIoInvertMask = lValue;
-                lResult = true;
-            } else if (iModelFunction >= ModelFunction_IoBit0 && iModelFunction <= ModelFunction_IoBit1) {
-                mIoInvertMask &= ~lBit;
-                mIoInvertMask |= (lValue & lBit);
-                lResult = true;
-            }
-            break;
-        default:
-            break;
-    }
-    return lResult;
 }
 
 uint8_t OneWireDS2413::convertStateToValue(uint8_t iValue){
@@ -161,10 +129,51 @@ bool OneWireDS2413::getValue(uint8_t &eValue, uint8_t iModelFunction)
             eValue = mValue ^ mIoInvertMask;
         } else if (iModelFunction >= ModelFunction_IoBit0 && iModelFunction <= ModelFunction_IoBit1) {
             uint8_t lBit = (1 << (iModelFunction - 1));
-            eValue = (mValue & lBit) ^ (mIoInvertMask & lBit) ? 1 : 0;
+            eValue = ((mValue & lBit) ^ (mIoInvertMask & lBit)) ? 1 : 0;
         } else {
             lResult = false;
         }
+    }
+    return lResult;
+}
+
+bool OneWireDS2413::setParameter(OneWire::ModelParameter iModelParameter, uint8_t iValue, uint8_t iModelFunction)
+{
+    bool lResult = false;
+    uint8_t lValue = iValue & ~PIO_WRITE_MASK;
+    uint8_t lBit = (1 << (iModelFunction - 1));
+    switch (iModelParameter)
+    {
+        case IoMask:
+            // if an IOMask is set, we use it here, 1 is Input, 0 is Ouput;
+            if (iModelFunction == ModelFunction_IoByte || iModelFunction == ModelFunction_Default)
+            {
+                mIoMask = lValue;
+                lResult = true;
+            }
+            else if (iModelFunction >= ModelFunction_IoBit0 && iModelFunction <= ModelFunction_IoBit1)
+            {
+                mIoMask &= ~lBit;
+                mIoMask |= (lValue & lBit);
+                lResult = true;
+            }
+            break;
+        case IoInvertMask:
+            // if an IoInvertMask is set, we use it here, 1 is invert, 0 is normal;
+            if (iModelFunction == ModelFunction_IoByte || iModelFunction == ModelFunction_Default)
+            {
+                mIoInvertMask = lValue;
+                lResult = true;
+            }
+            else if (iModelFunction >= ModelFunction_IoBit0 && iModelFunction <= ModelFunction_IoBit1)
+            {
+                mIoInvertMask &= ~lBit;
+                mIoInvertMask |= (lValue & lBit);
+                lResult = true;
+            }
+            break;
+        default:
+            break;
     }
     return lResult;
 }

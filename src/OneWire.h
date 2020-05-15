@@ -67,6 +67,13 @@ class OneWire {
         MeasureResolution
     };
 
+    enum SensorPriority
+    {
+        PrioLow,     // sensors like Temp, Hum etc
+        PrioNormal,  // IO sensors
+        PrioHigh     // iButtons
+    };
+
     OneWire(OneWireDS2482 *iBM, tIdRef iId);
     ~OneWire();
     // class members
@@ -74,6 +81,7 @@ class OneWire {
     virtual void loop() = 0;
     tIdRef Id() { return pId; }
     uint8_t Family() { return pId[0]; }
+    SensorPriority Prio() { return pPrio; };
     SensorMode Mode();
     void setModeConnected(bool iForce = false);
     void setModeDisconnected(bool iForce = false);
@@ -96,5 +104,6 @@ class OneWire {
     const int cMaxCount = 2;
 
     SensorMode pMode = New;
+    SensorPriority pPrio = PrioLow;
     uint8_t pSearchCount = 0;
 };

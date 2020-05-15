@@ -48,6 +48,8 @@
 #define RESET_ON            0x0
 #define RESET_OFF           0x1
 
+#define PIO_WRITE_MASK      0x00
+
 // Control modes
 #define SEARCH_TRIGGER(mode)      (mode<<SEARCH_TRIGGER_BIT)
 #define SEARCH_TERM(mode)         (mode<<SEARCH_TERM_BIT)
@@ -64,6 +66,7 @@ class OneWireDS2408 : public OneWire
     {
         Startup,
         GetInput,
+        GetStatus,
         SendOutput,
         Idle,
         Error
@@ -74,14 +77,17 @@ class OneWireDS2408 : public OneWire
     void init();
     void loop() override;
 
-    // bool set_LED_DS2408(uint8_t led, bool state);
-
-    uint8_t getRegister(uint16_t iRegister);
-    void setRegister(uint16_t iRegister, uint8_t iValue);
-
+    uint8_t convertStateToValue(uint8_t iValue);
     uint8_t getState();
     bool setState(uint8_t iState);
 
+    bool getValue(uint8_t &eValue, uint8_t iModelFunction) override;
+    bool setValue(uint8_t iValue, uint8_t iModelFunction) override;
+    bool setParameter(ModelParameter iModelParameter, uint8_t iValue, uint8_t iModelFunction) override;
+
+  private:
+    uint8_t getRegister(uint16_t iRegister);
+    void setRegister(uint16_t iRegister, uint8_t iValue);
     // Registers
     void setSearchMask(uint8_t iMask);
     void setSearchPolarity(uint8_t iPolarity);
@@ -94,6 +100,9 @@ class OneWireDS2408 : public OneWire
     uint8_t getActivity();                     // Activity Latch state Register
     bool resetActivity();
 
-private:
-  uint8_t mState = Startup;
+    uint8_t mState = Startup;
+    uint8_t mValue = 0;
+    uint8_t mLastValue = 0;
+    uint8_t mIoMask = 0;       // no input, just ouput
+    uint8_t mIoInvertMask = 0; // no invert
 };

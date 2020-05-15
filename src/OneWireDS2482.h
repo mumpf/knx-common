@@ -61,7 +61,7 @@ class OneWireDS2482
     OneWireDS2482(foundNewId iNewIdCallback);
     OneWireDS2482(uint8_t iI2cAddressOffset, foundNewId iNewIdCallback);
 
-    void setup();
+    void setup(bool iSearchNewDevices, bool iSearchIButtons);
     void loop();
 
     uint8_t getI2cAddress();
@@ -117,4 +117,7 @@ class OneWireDS2482
 
     OneWire *mSensor[30];
     uint8_t mDeviceCount = 0;
+
+    bool mSearchIButton = true;
+    bool mSearchNewDevices = true;
 };

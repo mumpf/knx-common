@@ -11,5 +11,7 @@ class OneWireDS1990 : public OneWire
 
     void loop() override;
 
+    bool getValue(uint8_t &eValue, uint8_t iModelFunction) override;
+
   private:
 };

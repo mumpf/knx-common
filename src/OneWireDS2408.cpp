@@ -4,7 +4,8 @@
 #include "OneWire.h"
 #include "OneWireDS2408.h"
 
-OneWireDS2408::OneWireDS2408(OneWireDS2482 *iBM, tIdRef iId) : OneWire(iBM, iId){
+OneWireDS2408::OneWireDS2408(OneWireDS2482 *iBM, tIdRef iId) : OneWire(iBM, iId) {
+    pPrio = PrioNormal;
 };
 
 void OneWireDS2408::init()
@@ -23,17 +24,11 @@ void OneWireDS2408::loop() {
   }
 }
 
-// bool OneWireDS2408::set_LED_DS2408(uint8_t led, bool state) {
-
-//   byte temp = get_state();
-
-//   if (state)
-//     bitClear(temp, led);
-//   else
-//     bitSet(temp, led);
-
-//    return set_state(temp);
-// }
+uint8_t OneWireDS2408::convertStateToValue(uint8_t iValue)
+{
+    uint8_t lResult = 0; // ((iValue & PIOB_STATE_INPUT_BIT) >> 1) | (iValue & PIOA_STATE_INPUT_BIT);
+    return lResult;
+}
 
 uint8_t OneWireDS2408::getRegister(uint16_t iRegister)
 {
@@ -110,3 +105,98 @@ bool OneWireDS2408::resetActivity() {
     return (pBM->wireReadByte() == 0xAA);
 }
 
+bool OneWireDS2408::setValue(uint8_t iValue, uint8_t iModelFunction)
+{
+    // we set here the output according to given model funtion as byte or bit
+    bool lResult = (Mode() == Connected);
+    if (lResult)
+    {
+        if (iModelFunction == ModelFunction_IoByte || iModelFunction == ModelFunction_Default)
+        {
+            mValue = iValue ^ mIoInvertMask;
+        }
+        else if (iModelFunction >= ModelFunction_IoBit0 && iModelFunction <= ModelFunction_IoBit7)
+        {
+            uint8_t lBit = (1 << (iModelFunction - 1));
+            if (iValue != ((mIoInvertMask & lBit) ? 1 : 0))
+            {
+                mValue |= lBit;
+            }
+            else
+            {
+                mValue &= ~lBit;
+            }
+        }
+        else
+        {
+            lResult = false;
+        }
+    }
+    // ensure, that state machine is set to write this value next
+    // if (lResult)
+    //     mState = SendOutput;
+    return lResult;
+}
+
+bool OneWireDS2408::getValue(uint8_t &eValue, uint8_t iModelFunction)
+{
+    // we get here the input according to given model funtion as byte or bit
+    bool lResult = (Mode() == Connected);
+    if (lResult)
+    {
+        if (iModelFunction == ModelFunction_IoByte || iModelFunction == ModelFunction_Default)
+        {
+            eValue = mValue ^ mIoInvertMask;
+        }
+        else if (iModelFunction >= ModelFunction_IoBit0 && iModelFunction <= ModelFunction_IoBit7)
+        {
+            uint8_t lBit = (1 << (iModelFunction - 1));
+            eValue = ((mValue & lBit) ^ (mIoInvertMask & lBit)) ? 1 : 0;
+        }
+        else
+        {
+            lResult = false;
+        }
+    }
+    return lResult;
+}
+
+bool OneWireDS2408::setParameter(OneWire::ModelParameter iModelParameter, uint8_t iValue, uint8_t iModelFunction)
+{
+    bool lResult = false;
+    uint8_t lBit = (1 << (iModelFunction - 1));
+    switch (iModelParameter)
+    {
+        case IoMask:
+            // if an IOMask is set, we use it here, 1 is Input, 0 is Ouput;
+            if (iModelFunction == ModelFunction_IoByte || iModelFunction == ModelFunction_Default)
+            {
+                mIoMask = iValue;
+                lResult = true;
+            }
+            else if (iModelFunction >= ModelFunction_IoBit0 && iModelFunction <= ModelFunction_IoBit1)
+            {
+                mIoMask &= ~lBit;
+                mIoMask |= (iValue & lBit);
+                lResult = true;
+            }
+            break;
+        case IoInvertMask:
+            // if an IoInvertMask is set, we use it here, 1 is invert, 0 is normal;
+            if (iModelFunction == ModelFunction_IoByte || iModelFunction == ModelFunction_Default)
+            {
+                mIoInvertMask = iValue;
+                lResult = true;
+            }
+            else if (iModelFunction >= ModelFunction_IoBit0 && iModelFunction <= ModelFunction_IoBit1)
+            {
+                mIoInvertMask &= ~lBit;
+                mIoInvertMask |= (iValue & lBit);
+                lResult = true;
+            }
+            break;
+        default:
+            break;
+    }
+    return lResult;
+}

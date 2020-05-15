@@ -86,9 +86,13 @@ bool OneWireDS18B20::updateTemp()
     uint16_t lTempRaw = (mScratchPad[1] << 8) | mScratchPad[0];
     bool lResult = false;
     if (lResolution) {
-        uint16_t lShift = 0xFFFF << abs(lResolution - 12);
-        lTempRaw &= lShift;
-        mTemp = (float)lTempRaw / 16.0;
+        if (Family() == MODEL_DS18S20) {
+            mTemp = (float)lTempRaw / 2.0;
+        } else {
+            uint16_t lShift = 0xFFFF << abs(lResolution - 12);
+            lTempRaw &= lShift;
+            mTemp = (float)lTempRaw / 16.0;
+        }
     #ifdef DebugInfoTemp
         printDebug("Temp = %0.1f°C --- ", mTemp);
         printHEX("Id: ", Id(), 7);
