@@ -34,8 +34,8 @@
 #define ALARMSEARCH     0xEC  // Query bus for devices with an alarm condition
 
 // Scratchpad locations
-#define TEMP_LSB        0
-#define TEMP_MSB        1
+#define DS1820_TEMP_LSB 0
+#define DS1820_TEMP_MSB 1
 #define HIGH_ALARM_TEMP 2
 #define LOW_ALARM_TEMP  3
 #define CONFIGURATION   4
@@ -69,8 +69,8 @@ class OneWireDS18B20 : public OneWire
     float getTemp();
     bool getValue(float &eValue, uint8_t iModelFunction) override;
 
-    void isActive(bool iState);
-    bool isActive();
+    // void isActive(bool iState);
+    // bool isActive();
 
     // attempt to determine if the device at the given address is connected to the bus
     bool isConnected();
@@ -85,8 +85,6 @@ class OneWireDS18B20 : public OneWire
     bool isParasitePowerMode();
 
   private:
-    typedef uint8_t ScratchPad[9];
-
     ScratchPad mScratchPad;
 
     StateSensorTemp mState = Startup;

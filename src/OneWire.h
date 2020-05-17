@@ -18,7 +18,7 @@
 #define MODEL_DS18B20 0x28
 #define MODEL_DS1822 0x22
 #define MODEL_DS1825 0x3B
-#define MODEL_DS2436 0x26   // Battery meter
+#define MODEL_DS2438 0x26   // Battery meter
 #define MODEL_DS2413 0x3A   // 2-Channel IO
 #define MODEL_DS2408 0x29   // 8-Channel IO
 #define MODEL_DS1990 0x01   // iButton
@@ -73,6 +73,7 @@ class OneWire {
         PrioNormal,  // IO sensors
         PrioHigh     // iButtons
     };
+    typedef uint8_t ScratchPad[9];
 
     OneWire(OneWireDS2482 *iBM, tIdRef iId);
     ~OneWire();

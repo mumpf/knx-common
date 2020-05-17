@@ -7,6 +7,7 @@
 #include "OneWireDS1990.h"
 #include "OneWireDS2408.h"
 #include "OneWireDS2413.h"
+#include "OneWireDS2438.h"
 
 #ifndef I2C_1WIRE_DEVICE_ADDRESSS
 #define I2C_1WIRE_DEVICE_ADDRESSS 0
@@ -220,8 +221,8 @@ OneWire *OneWireDS2482::CreateOneWire(tIdRef iId) {
         case MODEL_DS2413:
             lSensor = (new OneWireDS2413(this, iId));
             break;
-        case MODEL_DS2436:
-            lSensor = (new OneWireDS18B20(this, iId));
+        case MODEL_DS2438:
+            lSensor = (new OneWireDS2438(this, iId));
             break;
         default:
             printHEX("Unsupported family found: ", iId, 7);
