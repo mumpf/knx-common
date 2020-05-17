@@ -69,9 +69,6 @@ class OneWireDS18B20 : public OneWire
     float getTemp();
     bool getValue(float &eValue, uint8_t iModelFunction) override;
 
-    // void isActive(bool iState);
-    // bool isActive();
-
     // attempt to determine if the device at the given address is connected to the bus
     bool isConnected();
 

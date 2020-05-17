@@ -12,8 +12,8 @@
 #define CONVERTV 0xB4
 
 // ADC configurations
-#define CONFIG_VDD 0x0F
-#define CONFIG_VAD 0x00
+#define CONFIG_VDD 0x09
+#define CONFIG_VAD 0x01
 
 // Scratchpad locations
 #define STATUS 0
@@ -57,7 +57,7 @@ class OneWireDS2438 : public OneWire
     float mTemp = NAN;
     float mVDD = NAN;
     float mVAD = NAN;
-    float mVAD2 = NAN;
+    float mVSens = NAN;
 
     void init();
     void readScratchPad();
@@ -66,7 +66,6 @@ class OneWireDS2438 : public OneWire
     bool startConversionTemp();
     bool updateTemp();
     bool startConversionVolt();
-    float readVolt();
     bool updateVDD();
     bool updateVAD();
 };

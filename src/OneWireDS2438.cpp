@@ -91,23 +91,23 @@ bool OneWireDS2438::getValue(float& eValue, uint8_t iModelFunction)
         case FmlRaw_VoltageOfADC1:
             eValue = mVAD;
             break;
-        case FmlRaw_VoltageOfADC2:
-            eValue = NAN;
+        case FmlRaw_VoltageOfSens:
+            eValue = mVSens;
             break;
 
         case FmlNative_TemperatureNTC:
-            eValue = OneWireDS2438Fromula::nativeTemperatureNTC(mTemp, mVDD, mVAD, mVAD2);
+            eValue = OneWireDS2438Fromula::nativeTemperatureNTC(mTemp, mVDD, mVAD, mVSens);
             break;
         case FmlNative_Humidity:
-            eValue = OneWireDS2438Fromula::nativeHumidity(mTemp, mVDD, mVAD, mVAD2);
+            eValue = OneWireDS2438Fromula::nativeHumidity(mTemp, mVDD, mVAD, mVSens);
             break;
         case FmlNative_Brightness:
-            eValue = OneWireDS2438Fromula::nativeBrightness(mTemp, mVDD, mVAD, mVAD2);
+            eValue = OneWireDS2438Fromula::nativeBrightness(mTemp, mVDD, mVAD, mVSens);
             break;
 
         default:
             if (lFunctionIndex >= 0 && lFunctionIndex <= FmlUser_End) {
-                eValue = (*OneWireDS2438Fromula::userFunction)(mTemp, mVDD, mVAD, mVAD2);
+                eValue = (*OneWireDS2438Fromula::userFunction)(mTemp, mVDD, mVAD, mVSens);
             } else {
                 eValue = NAN;
             }
@@ -201,27 +201,29 @@ bool OneWireDS2438::startConversionVolt()
     return true;
 }
 
-float OneWireDS2438::readVolt()
+bool OneWireDS2438::updateVDD()
 {
     //copy data from eeprom to scratchpad & read scratchpad
     readScratchPad();
 
-    //return tempC (ignore 3 lsb as they are always 0);
     int16_t lVoltRaw = (((int16_t)mScratchPad[VOLT_MSB]) << 8) | mScratchPad[VOLT_LSB];
 
-    return (float)lVoltRaw * 0.01;
-}
-
-bool OneWireDS2438::updateVDD()
-{
-    mVDD = readVolt();
+    mVDD = (float)lVoltRaw * 0.01;
     return true;
 }
 
 bool OneWireDS2438::updateVAD()
 {
     bool lResult = false;
-    mVAD = readVolt();
+
+    readScratchPad();
+
+    int16_t lVoltRaw = (((int16_t)mScratchPad[VOLT_MSB]) << 8) | mScratchPad[VOLT_LSB];
+    mVAD = (float)lVoltRaw * 0.01;
+
+    lVoltRaw = (((int16_t)mScratchPad[CURR_MSB]) << 8) | mScratchPad[CURR_MSB];
+    mVSens = (double)lVoltRaw * 0.0002441;
+
     lResult = mVAD != NAN;
     pValid = lResult;
     return lResult;

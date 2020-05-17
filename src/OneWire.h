@@ -34,9 +34,12 @@
 #define ModelFunction_IoBit7  8
 #define ModelFunction_IoByte  9
 #define ModelFunction_TemperatureOnChip 10
-#define ModelFunction_TemperatureNTC    11
-#define ModelFunction_Humidity 12
-#define ModelFunction_Brightness 13
+#define ModelFunction_RawVDD 11
+#define ModelFunction_RawVAD 12
+#define ModelFunction_RawVSens 13
+#define ModelFunction_TemperatureNTC    15
+#define ModelFunction_Humidity 16
+#define ModelFunction_Brightness 17
 #define ModelFunction_CustomMin 50
 #define ModelFunction_CustomMax 79
 

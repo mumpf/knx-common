@@ -51,16 +51,6 @@ void OneWireDS18B20::init(bool iIsactive)
     mBitResolution = max(mBitResolution, resolution());
 }
 
-// void OneWireDS18B20::isActive(bool iState)
-// {
-//     mIsActive = iState;
-// }
-
-// bool OneWireDS18B20::isActive()
-// {
-//     return mIsActive;
-// }
-
 float OneWireDS18B20::getTemp()
 {
     return mTemp;
