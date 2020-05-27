@@ -32,6 +32,15 @@
 #define DS2482_COMMAND_SINGLEBIT 0x87
 #define DS2482_COMMAND_TRIPLET 0x78
 
+#define DS2484_COMMAND_ADJUSTPORT 0xC3
+#define DS2484_PORT_tRSTL 0x00
+#define DS2484_PORT_tMSP 0x20
+#define DS2484_PORT_tW0L 0x40
+#define DS2484_PORT_tREC0 0x60
+#define DS2484_PORT_RWPU 0x80
+#define DS2484_PORT_SPEED_STD 0x00 // standard speed
+#define DS2484_PORT_SPEED_OD 0x10  // overdrive speed
+
 #define WIRE_COMMAND_SKIP 0xCC
 #define WIRE_COMMAND_SELECT 0x55
 #define WIRE_COMMAND_SEARCH 0xF0
@@ -100,6 +109,7 @@ class OneWireDS2482
     uint8_t end();
     void writeByte(uint8_t);
     uint8_t readByte();
+    void adjustPort(uint8_t iData);
 
   private:
     bool ProcessPriorityBusUse();

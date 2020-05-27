@@ -26,18 +26,29 @@ OneWireDS2482::OneWireDS2482(uint8_t iI2cAddressOffset, foundNewId iNewIdCallbac
     mSearchNormal = new OneWireSearchFirst(this);
 }
 
-OneWireDS2482::OneWireDS2482(foundNewId iNewIdCallback) : OneWireDS2482(0, iNewIdCallback)
-{
-    // mI2cAddress = I2C_1WIRE_DEVICE_ADDRESSS;
-    // fNewIdCallback = iNewIdCallback;
-    // mError = 0;
-}
+OneWireDS2482::OneWireDS2482(foundNewId iNewIdCallback) : OneWireDS2482(0, iNewIdCallback) {}
 
 void OneWireDS2482::setup(bool iSearchNewDevices, bool iSearchIButtons)
 {
     deviceReset();
     setActivePullup();
-    setStrongPullup();
+    // setStrongPullup();
+
+    // for a DS2484 we set some timing parameters, currently just standard speed
+    // according values see Table 7 in Datasheet (knx-common/doc/DS2484.pdf), page 13.
+    uint8_t tRSTL = DS2484_PORT_tRSTL | DS2484_PORT_SPEED_STD | 0x6; // 0.560 ms
+    uint8_t tMSP = DS2484_PORT_tMSP | DS2484_PORT_SPEED_STD | 0x6;   // 0.068 ms
+    uint8_t tW0L = DS2484_PORT_tW0L | DS2484_PORT_SPEED_STD | 0x6;   // 0.064 ms
+    uint8_t tREC0 = DS2484_PORT_tREC0 | DS2484_PORT_SPEED_STD | 0x6; // 0.00525 ms
+    uint8_t RWPU = DS2484_PORT_RWPU | DS2484_PORT_SPEED_STD | 0x6;   // 1000 Ohm
+
+    adjustPort(tRSTL);
+    adjustPort(tMSP);
+    adjustPort(tW0L);
+    adjustPort(tREC0);
+    adjustPort(RWPU);
+
+    // TODO: Check if port adjustment worked
 
     mState = Init;
     mSearchNewDevices = iSearchNewDevices;
@@ -430,6 +441,15 @@ uint8_t OneWireDS2482::waitOnBusy(bool iSetReadPointer)
 
 	// Return the status so we don't need to explicitly do it again
 	return status;
+}
+
+// DS2484 only
+void OneWireDS2482::adjustPort(uint8_t iData) {
+    waitOnBusy();
+    begin();
+    writeByte(DS2484_COMMAND_ADJUSTPORT);
+    writeByte(iData);
+    end();
 }
 
 // Write to the config register
