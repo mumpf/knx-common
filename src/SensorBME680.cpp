@@ -127,7 +127,7 @@ float SensorBME680::measureValue(MeasureType iMeasureType) {
 
 bool SensorBME680::begin() {
     printDebug("Starting sensor BME680... ");
-    Bsec::begin(BME680_I2C_ADDR_PRIMARY, Wire, mDelayCallback);
+    Bsec::begin(gAddress, Wire, mDelayCallback);
     bool lResult = checkIaqSensorStatus();
     if (lResult) {
         Bsec::setConfig(bsec_config_iaq);
