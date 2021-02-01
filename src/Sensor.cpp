@@ -31,7 +31,7 @@ void Sensor::restartSensors() {
 }
 
 void Sensor::restartSensor() {
-    gSensorStateDelay = 0;
+    // gSensorStateDelay = 0;
     gSensorState = Wakeup;
 }
 
