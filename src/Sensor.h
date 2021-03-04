@@ -27,7 +27,9 @@ enum MeasureType {
     Voc = 16,
     Co2 = 32,
     Co2Calc = 64, // calculated Co2 from VOC
-    Accuracy = 128
+    Accuracy = 128,
+    Lux = 256,
+    Tof = 512
 };
 
 class Sensor
