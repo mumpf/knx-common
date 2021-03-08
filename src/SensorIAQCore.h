@@ -32,7 +32,7 @@ class SensorIAQCore : public Sensor
     float measureValue(MeasureType iMeasureType) override;
 
   public:
-    SensorIAQCore(uint8_t iMeasureTypes, uint8_t iAddress);
+    SensorIAQCore(uint16_t iMeasureTypes, uint8_t iAddress);
     virtual ~SensorIAQCore() {}
     bool begin() override;
 };

@@ -2,6 +2,8 @@
 #include <Adafruit_BME280.h>
 #include "Sensor.h"
 
+#define BME280_I2C_ADDR (0x76)
+
 class SensorBME280 : public Sensor, protected Adafruit_BME280
 {
 
@@ -12,7 +14,7 @@ protected:
     bool initFinalize();
 
 public:
-    SensorBME280(uint8_t iMeasureTypes, uint8_t iAddress);
+    SensorBME280(uint16_t iMeasureTypes, uint8_t iAddress);
     virtual ~SensorBME280() {}
     bool begin() override; 
 };

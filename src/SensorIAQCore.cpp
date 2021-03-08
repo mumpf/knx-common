@@ -1,7 +1,7 @@
 #include <Wire.h>
 #include "SensorIAQCore.h"
 
-SensorIAQCore::SensorIAQCore(uint8_t iMeasureTypes, uint8_t iAddress)
+SensorIAQCore::SensorIAQCore(uint16_t iMeasureTypes, uint8_t iAddress)
     : Sensor(iMeasureTypes, iAddress){};
 
 void SensorIAQCore::sensorLoopInternal()

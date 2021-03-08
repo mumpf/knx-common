@@ -1,7 +1,7 @@
 #include <Wire.h>
 #include "SensorOPT300x.h"
 
-SensorOPT300x::SensorOPT300x(uint8_t iMeasureTypes, uint8_t iAddress)
+SensorOPT300x::SensorOPT300x(uint16_t iMeasureTypes, uint8_t iAddress)
     : Sensor(iMeasureTypes, iAddress){};
 
 void SensorOPT300x::sensorLoopInternal()
@@ -56,10 +56,10 @@ bool SensorOPT300x::begin()
     bool lResult = Sensor::begin();
     if (lResult) {
         OPT300xConfig lConfig;
-        lConfig.rangeNumber = OPT3000X_CONF_AUTO_FULL_RANGE;
-        lConfig.conversionTime = OPT3000X_CONF_CONV_TIME_800;
-        lConfig.modeOfConversionOperation = OPT3000X_CONF_CONV_OPERATION_CONTINIOUS;
-        lConfig.latch = OPT3000X_CONF_LATCH_WINDOW;
+        lConfig.rangeNumber = OPT300X_CONF_AUTO_FULL_RANGE;
+        lConfig.conversionTime = OPT300X_CONF_CONV_TIME_800;
+        lConfig.modeOfConversionOperation = OPT300X_CONF_CONV_OPERATION_CONTINIOUS;
+        lConfig.latch = OPT300X_CONF_LATCH_WINDOW;
         writeConfig(lConfig);
     }
     printResult(lResult);
@@ -74,7 +74,7 @@ bool SensorOPT300x::getSensorData()
     uint16_t lRaw;
 
     Wire.beginTransmission(gAddress);
-    Wire.write(OPT3000X_REG_RESULT); // Send result register address
+    Wire.write(OPT300X_REG_RESULT); // Send result register address
     if (Wire.endTransmission() != 0)
         return false;
 
@@ -91,7 +91,7 @@ bool SensorOPT300x::getSensorData()
 bool SensorOPT300x::writeConfig(OPT300xConfig iConfig)
 {
     Wire.beginTransmission(gAddress);
-    Wire.write(OPT3000X_REG_CONFIG);
+    Wire.write(OPT300X_REG_CONFIG);
     Wire.write(iConfig.rawData >> 8);
     Wire.write(iConfig.rawData & 0x00FF);
     return (Wire.endTransmission() == 0);
