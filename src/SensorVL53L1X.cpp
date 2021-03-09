@@ -18,22 +18,22 @@ void SensorVL53L1X::sensorLoopInternal()
             break;
         case Finalize:
             // we ask for distance until we get a valid value
-            if (delayCheck(gSensorStateDelay, 2000))
+            if (delayCheck(pSensorStateDelay, 2000))
             {
                 if (getSensorData())
                     gSensorState = Running;
-                gSensorStateDelay = millis();
+                pSensorStateDelay = millis();
             }
             break;
         case Running:
-            if (delayCheck(gSensorStateDelay, 2000))
+            if (delayCheck(pSensorStateDelay, 2000))
             {
                 getSensorData();
-                gSensorStateDelay = millis();
+                pSensorStateDelay = millis();
             }
             break;
         default:
-            gSensorStateDelay = millis();
+            pSensorStateDelay = millis();
             break;
     }
 }

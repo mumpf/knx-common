@@ -16,22 +16,22 @@ void SensorOPT300x::sensorLoopInternal()
             break;
         case Finalize:
             // we ask for Temperature until we get a valid value
-            if (delayCheck(gSensorStateDelay, 200))
+            if (delayCheck(pSensorStateDelay, 200))
             {
                 if (getSensorData())
                     gSensorState = Running;
-                gSensorStateDelay = millis();
+                pSensorStateDelay = millis();
             }
             break;
         case Running:
-            if (delayCheck(gSensorStateDelay, 2000))
+            if (delayCheck(pSensorStateDelay, 2000))
             {
                 getSensorData();
-                gSensorStateDelay = millis();
+                pSensorStateDelay = millis();
             }
             break;
         default:
-            gSensorStateDelay = millis();
+            pSensorStateDelay = millis();
             break;
     }
 }
