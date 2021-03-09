@@ -2,6 +2,19 @@
 // #include <knx/bits.h>
 #include "Helper.h"
 
+#define SENSOR_COUNT 2
+
+#define BIT_1WIRE 1
+#define BIT_Temp 2
+#define BIT_Hum 4
+#define BIT_Pre 8
+#define BIT_Voc 16
+#define BIT_Co2 32
+#define BIT_RESERVE 64
+#define BIT_LOGIC 128
+#define BIT_LUX 256
+#define BIT_TOF 512
+
 enum SensorState {
     Off,
     Wakeup,
@@ -18,15 +31,17 @@ enum MeasureType {
     Voc = 16,
     Co2 = 32,
     Co2Calc = 64, // calculated Co2 from VOC
-    Accuracy = 128
+    Accuracy = 128,
+    Lux = 256,
+    Tof = 512
 };
 
 class Sensor
 {
   private:
-    static Sensor* sSensors[2];
+    static Sensor* sSensors[SENSOR_COUNT];
     static uint8_t sNumSensors;
-    uint8_t gMeasureTypes;
+    uint16_t gMeasureTypes;
 
   protected:
     // Sensor();
@@ -42,7 +57,7 @@ class Sensor
     void restartSensor();
 
   public:
-    Sensor(uint8_t iMeasureTypes, uint8_t iAddress);
+    Sensor(uint16_t iMeasureTypes, uint8_t iAddress);
     virtual ~Sensor() {}
 
     // static 

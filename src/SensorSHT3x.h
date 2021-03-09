@@ -30,7 +30,7 @@ class SensorSHT3x : public Sensor
     float measureValue(MeasureType iMeasureType) override;
 
   public:
-    SensorSHT3x(uint8_t iMeasureTypes, uint8_t iAddress);
+    SensorSHT3x(uint16_t iMeasureTypes, uint8_t iAddress);
     virtual ~SensorSHT3x() {}
     bool begin() override;
 };

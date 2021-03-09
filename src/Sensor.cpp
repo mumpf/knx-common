@@ -4,11 +4,12 @@
 
 // static
 uint8_t Sensor::sNumSensors = 0;
-Sensor* Sensor::sSensors[2];
+Sensor* Sensor::sSensors[SENSOR_COUNT];
 
-Sensor::Sensor(uint8_t iMeasureTypes, uint8_t iAddress)
+Sensor::Sensor(uint16_t iMeasureTypes, uint8_t iAddress)
 {
-    if (sNumSensors >= 2) {
+    if (sNumSensors >= SENSOR_COUNT)
+    {
         // println("Sensor::Sensor() - Currently only 2 (Hardware)Sensors are supported");
         //fatal error handling
         return;

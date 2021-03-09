@@ -1,6 +1,6 @@
 #include "SensorSCD30.h"
 
-SensorSCD30::SensorSCD30(uint8_t iMeasureTypes, uint8_t iAddress)
+SensorSCD30::SensorSCD30(uint16_t iMeasureTypes, uint8_t iAddress)
     : Sensor(iMeasureTypes, iAddress), SCD30() {};
 
 float SensorSCD30::measureValue(MeasureType iMeasureType) {

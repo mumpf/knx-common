@@ -1,6 +1,6 @@
 #include "SensorBME280.h"
 
-SensorBME280::SensorBME280(uint8_t iMeasureTypes, uint8_t iAddress)
+SensorBME280::SensorBME280(uint16_t iMeasureTypes, uint8_t iAddress)
     : Sensor(iMeasureTypes, iAddress), Adafruit_BME280() {};
 
 /*!

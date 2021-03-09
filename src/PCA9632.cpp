@@ -85,13 +85,13 @@ static void PCA9632_WriteAllRegisters(const byte addr, const byte regadd, const 
   Wire.endTransmission();
 }
 
-static byte PCA9632_ReadRegister(const byte addr, const byte regadd) {
-  Wire.beginTransmission(addr);
-  Wire.write(regadd);
-  const byte value = Wire.read();
-  Wire.endTransmission();
-  return value;
-}
+// static byte PCA9632_ReadRegister(const byte addr, const byte regadd) {
+//   Wire.beginTransmission(addr);
+//   Wire.write(regadd);
+//   const byte value = Wire.read();
+//   Wire.endTransmission();
+//   return value;
+// }
 
 const uint16_t pwmtable[32] PROGMEM =
     {
