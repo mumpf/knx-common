@@ -1,8 +1,16 @@
 #include <Wire.h>
 #include "SensorOPT300x.h"
 
+SensorOPT300x::SensorOPT300x(uint16_t iMeasureTypes)
+    : Sensor(iMeasureTypes, OPT300X_I2C_ADDR){};
+
 SensorOPT300x::SensorOPT300x(uint16_t iMeasureTypes, uint8_t iAddress)
     : Sensor(iMeasureTypes, iAddress){};
+
+uint8_t SensorOPT300x::getSensorClass()
+{
+    return SENS_OPT300X;
+}
 
 void SensorOPT300x::sensorLoopInternal()
 {

@@ -1,12 +1,11 @@
 #pragma once
 
-#include "bsec/bsec.h"
 #include "Sensor.h"
 #include "EepromManager.h"
 
-#define BME680_I2C_ADDR (0x76)
+#define SGP30_I2C_ADDR (0x58)
 
-class SensorBME680 : public Sensor, protected Bsec
+class SensorSGP30 : public Sensor
 {
 
 protected:
@@ -18,17 +17,14 @@ protected:
     void sensorLoadState();
     void sensorUpdateState();
     uint32_t stateUpdateTimer = 0;
-    static bsec_virtual_sensor_t sensorList[];
-    bme680_delay_fptr_t mDelayCallback = 0;
 
   public:
-    SensorBME680(uint16_t iMeasureTypes);
-    SensorBME680(uint16_t iMeasureTypes, uint8_t iAddress, bme680_delay_fptr_t iDelayCallback);
-    SensorBME680(uint16_t iMeasureTypes, uint8_t iAddress, bme680_delay_fptr_t iDelayCallback, uint8_t iMagicKeyOffset);
-    virtual ~SensorBME680() {}
+    SensorSGP30(uint16_t iMeasureTypes);
+    SensorSGP30(uint16_t iMeasureTypes, uint8_t iAddress);
+    SensorSGP30(uint16_t iMeasureTypes, uint8_t iAddress, uint8_t iMagicKeyOffset);
+    virtual ~SensorSGP30() {}
 
     bool begin() override;
-    void delayCallback(bme680_delay_fptr_t iDelayCallback);
     void setMagicKeyOffset(uint8_t iMagicKeyOffset);
 
   private:

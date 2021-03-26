@@ -5,13 +5,21 @@
 #define STATE_SAVE_PERIOD  UINT32_C(360 * 60 * 1000) // 360 minutes - 4 times a day
 #define EEPROM_BME680_START_ADDRESS 0xC80
 
+SensorBME680::SensorBME680(uint16_t iMeasureTypes)
+    : Sensor(iMeasureTypes, BME680_I2C_ADDR), Bsec()
+{
+    mEEPROM = new EepromManager(100, 5, sMagicWord);
+}
+
 SensorBME680::SensorBME680(uint16_t iMeasureTypes, uint8_t iAddress, bme680_delay_fptr_t iDelayCallback)
-    : Sensor(iMeasureTypes, iAddress), Bsec(), mDelayCallback(iDelayCallback) {
+    : Sensor(iMeasureTypes, iAddress), Bsec(), mDelayCallback(iDelayCallback)
+{
     mEEPROM = new EepromManager(100, 5, sMagicWord);
 }
 
 SensorBME680::SensorBME680(uint16_t iMeasureTypes, uint8_t iAddress, bme680_delay_fptr_t iDelayCallback, uint8_t iMagicKeyOffset)
-    : Sensor(iMeasureTypes, iAddress), Bsec(), mDelayCallback(iDelayCallback) {
+    : Sensor(iMeasureTypes, iAddress), Bsec(), mDelayCallback(iDelayCallback)
+{
     mEEPROM = new EepromManager(100, 5, sMagicWord);
     sMagicWord[0] ^= iMagicKeyOffset;
 };
@@ -40,6 +48,21 @@ uint8_t SensorBME680::bsec_config_iaq[454] =
 
 // EEPROM memory start id
 uint8_t SensorBME680::sMagicWord[] = {0xCA, 0xFE, 0x3D, 0x76};
+
+uint8_t SensorBME680::getSensorClass()
+{
+    return SENS_BME680;
+}
+
+void SensorBME680::delayCallback(bme680_delay_fptr_t iDelayCallback)
+{
+    mDelayCallback = iDelayCallback;
+}
+
+void SensorBME680::setMagicKeyOffset(uint8_t iMagicKeyOffset)
+{
+    sMagicWord[0] ^= iMagicKeyOffset;
+}
 
 /*!
 * @brief implements a state engine to restart the sensor without delays

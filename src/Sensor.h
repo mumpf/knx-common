@@ -2,7 +2,7 @@
 // #include <knx/bits.h>
 #include "Helper.h"
 
-#define SENSOR_COUNT 2
+#define SENSOR_COUNT 5
 
 #define BIT_1WIRE 1
 #define BIT_Temp 2
@@ -14,6 +14,15 @@
 #define BIT_LOGIC 128
 #define BIT_LUX 256
 #define BIT_TOF 512
+
+#define SENS_SHT3X 1
+#define SENS_BME280 2
+#define SENS_BME680 3
+#define SENS_SCD30 4
+#define SENS_IAQCORE 5
+#define SENS_OPT300X 6
+#define SENS_VL53L1X 7
+#define SENS_SGP30 8
 
 enum SensorState {
     Off,
@@ -45,10 +54,14 @@ class Sensor
 
   protected:
     // Sensor();
-    uint8_t gAddress;
+    Sensor(uint16_t iMeasureTypes, uint8_t iAddress);
+    virtual ~Sensor() {}
+
+    uint8_t gAddress; 
     SensorState gSensorState = Wakeup;
     uint32_t pSensorStateDelay = 0;
 
+    virtual uint8_t getSensorClass() = 0; // pure; returns unique ID for this sensor type
     bool checkSensorConnection();
     virtual float measureValue(MeasureType iMeasureType) = 0; //pure
     virtual void sensorLoopInternal();
@@ -57,16 +70,14 @@ class Sensor
     void restartSensor();
 
   public:
-    Sensor(uint16_t iMeasureTypes, uint8_t iAddress);
-    virtual ~Sensor() {}
-
+    static Sensor* factory(uint8_t iSensorClass, MeasureType iMeasureType);
     // static 
     static void sensorLoop();
     static bool measureValue(MeasureType iMeasureType, float& eValue);
     static uint8_t getError();
     static void saveState();
     static void restartSensors();
-    static void changeSensorOrder(Sensor *iSensor, uint8_t iPosition);
+    // static void changeSensorOrder(Sensor *iSensor, uint8_t iPosition);
 
     virtual bool begin(); // first initialization, may be blocking, should be called druing setup(), not during loop()
 };

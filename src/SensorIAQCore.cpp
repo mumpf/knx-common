@@ -1,8 +1,16 @@
 #include <Wire.h>
 #include "SensorIAQCore.h"
 
+SensorIAQCore::SensorIAQCore(uint16_t iMeasureTypes)
+    : Sensor(iMeasureTypes, IAQCORE_I2C_ADDR){};
+
 SensorIAQCore::SensorIAQCore(uint16_t iMeasureTypes, uint8_t iAddress)
     : Sensor(iMeasureTypes, iAddress){};
+
+uint8_t SensorIAQCore::getSensorClass()
+{
+    return SENS_IAQCORE;
+}
 
 void SensorIAQCore::sensorLoopInternal()
 {

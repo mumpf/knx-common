@@ -11,11 +11,14 @@ class SensorVL53L1X : public Sensor, protected VL53L1X
     bool getSensorData();
 
   protected:
+    uint8_t getSensorClass() override; // returns unique ID for this sensor type
     void sensorLoopInternal() override;
     float measureValue(MeasureType iMeasureType) override;
 
   public:
+    SensorVL53L1X(uint16_t iMeasureTypes);
     SensorVL53L1X(uint16_t iMeasureTypes, uint8_t iAddress);
     virtual ~SensorVL53L1X() {}
+    
     bool begin() override;
 };

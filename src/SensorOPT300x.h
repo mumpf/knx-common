@@ -51,11 +51,14 @@ class SensorOPT300x : public Sensor
 
   protected:
     float mLux = NAN;
+    uint8_t getSensorClass() override; // returns unique ID for this sensor type
     void sensorLoopInternal() override;
     float measureValue(MeasureType iMeasureType) override;
 
   public:
+    SensorOPT300x(uint16_t iMeasureTypes);
     SensorOPT300x(uint16_t iMeasureTypes, uint8_t iAddress);
     virtual ~SensorOPT300x() {}
+
     bool begin() override;
 };

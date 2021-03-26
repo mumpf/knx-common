@@ -17,7 +17,7 @@ bool equalId(const tIdRef iId1, const int32_t* iId2)
     return (iId1[0] == iId2[0]);
 }
 
-bool copyId(tIdRef iIdLeft, const tIdRef iIdRight)
+void copyId(tIdRef iIdLeft, const tIdRef iIdRight)
 {
     for (uint8_t i = 0; i < 7; i++)
         iIdLeft[i] = iIdRight[i];

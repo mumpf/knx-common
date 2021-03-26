@@ -49,7 +49,7 @@ typedef uint8_t *tIdRef;
 
 bool equalId(const tIdRef iId1, const tIdRef iId2);
 bool equalId(const tIdRef iId1, const int32_t* iId2);
-bool copyId(tIdRef iIdLeft, const tIdRef iIdRight);
+void copyId(tIdRef iIdLeft, const tIdRef iIdRight);
 
 // forward declaration
 class OneWireDS2482;

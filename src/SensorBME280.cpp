@@ -1,7 +1,15 @@
 #include "SensorBME280.h"
 
+SensorBME280::SensorBME280(uint16_t iMeasureTypes)
+    : Sensor(iMeasureTypes, BME280_I2C_ADDR), Adafruit_BME280(){};
+
 SensorBME280::SensorBME280(uint16_t iMeasureTypes, uint8_t iAddress)
-    : Sensor(iMeasureTypes, iAddress), Adafruit_BME280() {};
+    : Sensor(iMeasureTypes, iAddress), Adafruit_BME280(){};
+
+uint8_t SensorBME280::getSensorClass()
+{
+    return SENS_BME280;
+} 
 
 /*!
  * @brief implements a state engine to restart the sensor without delays

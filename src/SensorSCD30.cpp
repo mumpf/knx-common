@@ -1,9 +1,18 @@
 #include "SensorSCD30.h"
 
-SensorSCD30::SensorSCD30(uint16_t iMeasureTypes, uint8_t iAddress)
-    : Sensor(iMeasureTypes, iAddress), SCD30() {};
+SensorSCD30::SensorSCD30(uint16_t iMeasureTypes)
+    : Sensor(iMeasureTypes, SCD30_I2C_ADDR), SCD30(){};
 
-float SensorSCD30::measureValue(MeasureType iMeasureType) {
+SensorSCD30::SensorSCD30(uint16_t iMeasureTypes, uint8_t iAddress)
+    : Sensor(iMeasureTypes, iAddress), SCD30(){};
+
+uint8_t SensorSCD30::getSensorClass()
+{
+    return SENS_SCD30;
+}
+
+float SensorSCD30::measureValue(MeasureType iMeasureType)
+{
     switch (iMeasureType)
     {
     case Temperature:

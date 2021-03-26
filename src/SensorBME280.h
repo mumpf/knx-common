@@ -8,13 +8,16 @@ class SensorBME280 : public Sensor, protected Adafruit_BME280
 {
 
 protected:
+    uint8_t getSensorClass() override; // returns unique ID for this sensor type
     float measureValue(MeasureType iMeasureType) override;
     void sensorLoopInternal() override;
     bool initWakeup();
     bool initFinalize();
 
 public:
+    SensorBME280(uint16_t iMeasureTypes);
     SensorBME280(uint16_t iMeasureTypes, uint8_t iAddress);
     virtual ~SensorBME280() {}
+
     bool begin() override; 
 };

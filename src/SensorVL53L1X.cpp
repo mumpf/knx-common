@@ -1,8 +1,16 @@
 #include <Wire.h>
 #include "SensorVL53L1X.h"
 
+SensorVL53L1X::SensorVL53L1X(uint16_t iMeasureTypes)
+    : Sensor(iMeasureTypes, VL53L1X_I2C_ADDR), VL53L1X(){};
+
 SensorVL53L1X::SensorVL53L1X(uint16_t iMeasureTypes, uint8_t iAddress)
-    : Sensor(iMeasureTypes, iAddress), VL53L1X() {};
+    : Sensor(iMeasureTypes, iAddress), VL53L1X(){};
+
+uint8_t SensorVL53L1X::getSensorClass()
+{
+    return SENS_VL53L1X;
+}
 
 void SensorVL53L1X::sensorLoopInternal()
 {

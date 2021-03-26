@@ -2,6 +2,7 @@
 #include "Sensor.h"
 
 #define SHT3X_ADDR 0x44
+
 #define SHT3X_MEAS_HIGHREP 0x2400
 #define SHT3X_MEAS_MEDREP 0x240B
 #define SHT3X_MEAS_LOWREP 0x2416
@@ -26,11 +27,14 @@ class SensorSHT3x : public Sensor
     float mTemp = NAN;
     float mHumidity = NAN;
 
+    uint8_t getSensorClass() override; // returns unique ID for this sensor type
     void sensorLoopInternal() override;
     float measureValue(MeasureType iMeasureType) override;
 
   public:
+    SensorSHT3x(uint16_t iMeasureTypes);
     SensorSHT3x(uint16_t iMeasureTypes, uint8_t iAddress);
     virtual ~SensorSHT3x() {}
+
     bool begin() override;
 };

@@ -1,8 +1,16 @@
 #include <Wire.h>
 #include "SensorSHT3x.h"
 
+SensorSHT3x::SensorSHT3x(uint16_t iMeasureTypes)
+    : Sensor(iMeasureTypes, SHT3X_ADDR){};
+
 SensorSHT3x::SensorSHT3x(uint16_t iMeasureTypes, uint8_t iAddress)
     : Sensor(iMeasureTypes, iAddress){};
+
+uint8_t SensorSHT3x::getSensorClass()
+{
+    return SENS_SHT3X;
+}
 
 void SensorSHT3x::sensorLoopInternal()
 {

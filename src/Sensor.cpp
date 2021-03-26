@@ -6,6 +6,26 @@
 uint8_t Sensor::sNumSensors = 0;
 Sensor* Sensor::sSensors[SENSOR_COUNT];
 
+Sensor* newSensor(uint8_t iSensorClass, MeasureType iMeasureType);
+
+Sensor* Sensor::factory(uint8_t iSensorClass, MeasureType iMeasureType) {
+    Sensor* lSensor = nullptr;
+    // first check, if there is already an instance
+    for (size_t lCount = 0; lCount < sNumSensors; lCount++)
+    {
+        if (sSensors[lCount]->getSensorClass() == iSensorClass)
+        {
+            lSensor = sSensors[lCount];
+            break;
+        }
+    }
+    if (lSensor == nullptr) {
+        lSensor = newSensor(iSensorClass, iMeasureType);
+    }
+    lSensor->gMeasureTypes |= iMeasureType;
+    return lSensor;
+}
+
 Sensor::Sensor(uint16_t iMeasureTypes, uint8_t iAddress)
 {
     if (sNumSensors >= SENSOR_COUNT)
@@ -36,14 +56,14 @@ void Sensor::restartSensor() {
     // gSensorState = Wakeup;
 }
 
-void Sensor::changeSensorOrder(Sensor *iSensor, uint8_t iPosition){
-    // first check, if the sensor is already at his position
-    if (sSensors[iPosition] == iSensor) return;
-    // as long as we have just 2 Sensors, new position is a simple exchange
-    int8_t lNewPosition = abs(iPosition - 1);
-    sSensors[lNewPosition] = sSensors[iPosition];
-    sSensors[iPosition] = iSensor;
-}
+// void Sensor::changeSensorOrder(Sensor *iSensor, uint8_t iPosition){
+//     // first check, if the sensor is already at his position
+//     if (sSensors[iPosition] == iSensor) return;
+//     // as long as we have just 2 Sensors, new position is a simple exchange
+//     int8_t lNewPosition = abs(iPosition - 1);
+//     sSensors[lNewPosition] = sSensors[iPosition];
+//     sSensors[iPosition] = iSensor;
+// }
 
 bool Sensor::checkSensorConnection()
 {

@@ -27,12 +27,15 @@ class SensorIAQCore : public Sensor
   protected:
     float mCo2 = NAN;
     float mVoc = NAN;
-    
+
+    uint8_t getSensorClass() override; // returns unique ID for this sensor type
     void sensorLoopInternal() override;
     float measureValue(MeasureType iMeasureType) override;
 
   public:
+    SensorIAQCore(uint16_t iMeasureTypes);
     SensorIAQCore(uint16_t iMeasureTypes, uint8_t iAddress);
     virtual ~SensorIAQCore() {}
+
     bool begin() override;
 };
