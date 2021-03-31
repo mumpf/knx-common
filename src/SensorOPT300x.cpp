@@ -74,6 +74,11 @@ bool SensorOPT300x::begin()
     return lResult;
 }
 
+uint8_t SensorOPT300x::getI2cSpeed()
+{
+    return 4; // n * 100kHz
+}
+
 bool SensorOPT300x::getSensorData()
 {
     // clear read buffer

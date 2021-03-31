@@ -15,6 +15,7 @@
 #define BIT_LUX 256
 #define BIT_TOF 512
 
+#define SENS_NO 0
 #define SENS_SHT3X 1
 #define SENS_BME280 2
 #define SENS_BME680 3
@@ -23,6 +24,7 @@
 #define SENS_OPT300X 6
 #define SENS_VL53L1X 7
 #define SENS_SGP30 8
+#define SENS_SCD41 9
 
 enum SensorState {
     Off,
@@ -50,6 +52,7 @@ class Sensor
   private:
     static Sensor* sSensors[SENSOR_COUNT];
     static uint8_t sNumSensors;
+    static uint8_t sMaxI2cSpeed;
     uint16_t gMeasureTypes;
 
   protected:
@@ -68,16 +71,19 @@ class Sensor
     virtual void sensorSaveState();
     // non blocking restart approach for a sensor
     void restartSensor();
+    virtual bool begin(); // first initialization, may be blocking, should be called druing setup(), not during loop()
 
   public:
-    static Sensor* factory(uint8_t iSensorClass, MeasureType iMeasureType);
     // static 
+    static Sensor* factory(uint8_t iSensorClass, MeasureType iMeasureType);
     static void sensorLoop();
     static bool measureValue(MeasureType iMeasureType, float& eValue);
     static uint8_t getError();
     static void saveState();
     static void restartSensors();
+    static bool beginSensors();
     // static void changeSensorOrder(Sensor *iSensor, uint8_t iPosition);
+   
+    virtual uint8_t getI2cSpeed();
 
-    virtual bool begin(); // first initialization, may be blocking, should be called druing setup(), not during loop()
 };

@@ -61,4 +61,5 @@ class SensorOPT300x : public Sensor
     virtual ~SensorOPT300x() {}
 
     bool begin() override;
+    uint8_t getI2cSpeed() override;
 };

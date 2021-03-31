@@ -19,5 +19,6 @@ public:
     SensorBME280(uint16_t iMeasureTypes, uint8_t iAddress);
     virtual ~SensorBME280() {}
 
-    bool begin() override; 
+    bool begin() override;
+    uint8_t getI2cSpeed() override;
 };

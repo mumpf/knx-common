@@ -21,4 +21,5 @@ class SensorVL53L1X : public Sensor, protected VL53L1X
     virtual ~SensorVL53L1X() {}
     
     bool begin() override;
+    uint8_t getI2cSpeed() override;
 };

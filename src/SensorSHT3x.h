@@ -37,4 +37,5 @@ class SensorSHT3x : public Sensor
     virtual ~SensorSHT3x() {}
 
     bool begin() override;
+    uint8_t getI2cSpeed() override;
 };

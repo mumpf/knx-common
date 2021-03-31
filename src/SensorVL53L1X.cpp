@@ -84,6 +84,11 @@ bool SensorVL53L1X::begin()
     return lResult;
 }
 
+uint8_t SensorVL53L1X::getI2cSpeed()
+{
+    return 4; // n * 100kHz
+}
+
 bool SensorVL53L1X::getSensorData()
 {
     bool lResult = this->dataReady();

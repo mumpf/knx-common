@@ -77,6 +77,11 @@ bool SensorSHT3x::begin()
     return lResult;
 }
 
+uint8_t SensorSHT3x::getI2cSpeed()
+{
+    return 4; // n * 100kHz
+}
+
 float SensorSHT3x::readTemperature(void)
 {
     if (!getTempHum())

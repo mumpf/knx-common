@@ -149,6 +149,11 @@ bool SensorSGP30::begin()
     return lResult;
 }
 
+uint8_t SensorSGP30::getI2cSpeed()
+{
+    return 4; // n * 100kHz
+}
+
 bool SensorSGP30::checkIaqSensorStatus(void)
 {
     // if (Bsec::status < BSEC_OK)

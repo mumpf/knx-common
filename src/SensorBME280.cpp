@@ -94,3 +94,8 @@ bool SensorBME280::begin() {
     printResult(lResult);
     return lResult;
 }
+
+uint8_t SensorBME280::getI2cSpeed()
+{
+    return 4; // n * 100kHz
+}

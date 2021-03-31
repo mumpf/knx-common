@@ -2,6 +2,9 @@
 #include "Hardware.h"
 #include "Helper.h"
 #include "EepromManager.h"
+#ifdef WATCHDOG
+#include <Adafruit_SleepyDog.h>
+#endif
 
 void savePower() {
     printDebug("savePower: Switching off 5V rail...\n");
@@ -25,7 +28,10 @@ void restorePower(){
 }
 
 void fatalError(uint8_t iErrorCode, const char* iErrorText) {
-    const uint16_t lDelay = 300;
+    const uint16_t lDelay = 200;
+#ifdef WATCHDOG
+    Watchdog.disable();
+#endif
     pinMode(LED_BUILTIN, OUTPUT);
     pinMode(LED_YELLOW_PIN, OUTPUT);
     for (;;)

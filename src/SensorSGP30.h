@@ -25,6 +25,7 @@ protected:
     virtual ~SensorSGP30() {}
 
     bool begin() override;
+    uint8_t getI2cSpeed() override;
     void setMagicKeyOffset(uint8_t iMagicKeyOffset);
 
   private:

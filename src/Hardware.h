@@ -99,7 +99,10 @@
 // board independent definitions
 #define BUZZER_FREQ_LOUD 2400
 #define BUZZER_FREQ_NORMAL 4000
-#define BUZZER_FREQ_SILENT 1500
+#define BUZZER_FREQ_SILENT 1800
+
+// fatal error codes
+#define FATAL_SENS_UNKNOWN 5  // unknown or unsupported sensor
 
 // // EEPROM Support
 // #define I2C_EEPROM_DEVICE_ADDRESSS 0x50 // Address of 24LC256 eeprom chip

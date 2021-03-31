@@ -1,9 +1,11 @@
 #include <Arduino.h>
 #include <Wire.h>
 #include "Sensor.h"
+#include "Hardware.h"
 
 // static
 uint8_t Sensor::sNumSensors = 0;
+uint8_t Sensor::sMaxI2cSpeed = 255;
 Sensor* Sensor::sSensors[SENSOR_COUNT];
 
 Sensor* newSensor(uint8_t iSensorClass, MeasureType iMeasureType);
@@ -22,7 +24,12 @@ Sensor* Sensor::factory(uint8_t iSensorClass, MeasureType iMeasureType) {
     if (lSensor == nullptr) {
         lSensor = newSensor(iSensorClass, iMeasureType);
     }
+    // at this point we have a valid sensor or a sensor dummy!
     lSensor->gMeasureTypes |= iMeasureType;
+    uint8_t lI2cSpeed = lSensor->getI2cSpeed();
+    // determine maximum available i2c speed
+    if (lI2cSpeed < sMaxI2cSpeed)
+        sMaxI2cSpeed = lI2cSpeed;
     return lSensor;
 }
 
@@ -49,6 +56,19 @@ void Sensor::sensorLoop() {
 void Sensor::restartSensors() {
     for (uint8_t lCounter = 0; lCounter < sNumSensors; lCounter++)
         sSensors[lCounter]->restartSensor();
+}
+
+// static
+bool Sensor::beginSensors()
+{
+    bool lResult = true;
+    // fist we start i2c with the right speed
+    Wire.begin();
+    Wire.setClock(sMaxI2cSpeed * 100000);
+    delay(1);
+    for (uint8_t lCounter = 0; lCounter < sNumSensors; lCounter++)
+        lResult = sSensors[lCounter]->begin() && lResult;
+    return lResult;
 }
 
 void Sensor::restartSensor() {
@@ -106,6 +126,10 @@ void Sensor::sensorLoopInternal() {
 bool Sensor::begin() {
     // gSensorState = Running;
     return checkSensorConnection();
+}
+
+uint8_t Sensor::getI2cSpeed() {
+    return 1;  // n * 100kHz
 }
 
 // should be overridden, if there is a state to save before power failure

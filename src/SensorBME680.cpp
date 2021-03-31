@@ -173,6 +173,11 @@ bool SensorBME680::begin() {
     return lResult;
 }
 
+uint8_t SensorBME680::getI2cSpeed()
+{
+    return 4; // n * 100kHz
+}
+
 bool SensorBME680::checkIaqSensorStatus(void)
 {
     if (Bsec::status < BSEC_OK)
