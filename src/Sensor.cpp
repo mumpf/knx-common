@@ -63,11 +63,13 @@ bool Sensor::beginSensors()
 {
     bool lResult = true;
     // fist we start i2c with the right speed
-    Wire.begin();
-    Wire.setClock(sMaxI2cSpeed * 100000);
-    delay(1);
-    for (uint8_t lCounter = 0; lCounter < sNumSensors; lCounter++)
-        lResult = sSensors[lCounter]->begin() && lResult;
+    if (sNumSensors > 0) {
+        Wire.begin();
+        Wire.setClock(sMaxI2cSpeed * 100000);
+        delay(1);
+        for (uint8_t lCounter = 0; lCounter < sNumSensors; lCounter++)
+            lResult = sSensors[lCounter]->begin() && lResult;
+    }
     return lResult;
 }
 
