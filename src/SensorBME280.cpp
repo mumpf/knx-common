@@ -19,7 +19,7 @@ void SensorBME280::sensorLoopInternal() {
     {
     case Wakeup:
         if (pSensorStateDelay == 0 || delayCheck(pSensorStateDelay, 1000)) {
-            if (initWakeup()) gSensorState = Calibrate;
+            if (SensorBME280::begin() && initWakeup()) gSensorState = Calibrate;
             pSensorStateDelay = millis();
         }
         break;
@@ -29,6 +29,7 @@ void SensorBME280::sensorLoopInternal() {
             if (!isReadingCalibration()) {
                 initFinalize();
                 gSensorState = Finalize;
+                printResult(true);
             }
             pSensorStateDelay = millis();
         }
@@ -48,9 +49,6 @@ void SensorBME280::sensorLoopInternal() {
  */
 bool SensorBME280::initWakeup()
 {
-    // init I2C interface
-    _wire->begin();
-
     // check if sensor, i.e. the chip ID is correct
     _sensorID = read8(BME280_REGISTER_CHIPID);
     if (_sensorID != 0x60)
@@ -88,10 +86,11 @@ float SensorBME280::measureValue(MeasureType iMeasureType) {
 
 bool SensorBME280::begin() {
     printDebug("Starting sensor BME280... ");
-    bool lResult = Adafruit_BME280::begin(gAddress);
-    if (lResult)
-        lResult = Sensor::begin();
-    printResult(lResult);
+    _i2caddr = gAddress;
+    _wire = &Wire;
+    bool lResult = Sensor::begin();
+    gSensorState = Wakeup;
+    // printResult(lResult);
     return lResult;
 }
 

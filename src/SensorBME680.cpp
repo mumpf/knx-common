@@ -74,16 +74,7 @@ void SensorBME680::sensorLoopInternal() {
         case Wakeup:
             if (pSensorStateDelay == 0 || delayCheck(pSensorStateDelay, 1000))
             {
-                pSensorStateDelay = millis();
-                printDebug("Restarting Sensor BME680... ");
-                Bsec::setConfig(bsec_config_iaq);
-                lResult = checkIaqSensorStatus();
-                if (lResult)
-                {
-                    Bsec::updateSubscription(sensorList, sizeof(sensorList) / sizeof(bsec_virtual_sensor_t), BSEC_SAMPLE_RATE_LP);
-                    lResult = checkIaqSensorStatus();
-                }
-                gSensorState = lResult ? Calibrate : Off;
+                Sensor::sensorLoopInternal();
             }
             break;
         case Calibrate:
@@ -149,8 +140,11 @@ float SensorBME680::measureValue(MeasureType iMeasureType) {
 
 bool SensorBME680::begin() {
     printDebug("Starting sensor BME680... ");
-    Bsec::begin(gAddress, Wire, mDelayCallback);
-    bool lResult = checkIaqSensorStatus();
+    bool lResult = Sensor::begin();
+    if (lResult) {
+        Bsec::begin(gAddress, Wire, mDelayCallback);
+        lResult = checkIaqSensorStatus();
+    }
     if (lResult) {
         Bsec::setConfig(bsec_config_iaq);
         lResult = checkIaqSensorStatus();
@@ -159,17 +153,6 @@ bool SensorBME680::begin() {
         Bsec::updateSubscription(sensorList, sizeof(sensorList)/sizeof(bsec_virtual_sensor_t), BSEC_SAMPLE_RATE_LP);
         lResult = checkIaqSensorStatus();
     }
-    if (lResult) {
-        sensorLoadState();
-        lResult = checkIaqSensorStatus();
-        if (!lResult)
-            restartSensor();
-    }
-    if (lResult)
-        lResult = Sensor::begin();
-    gSensorState = Finalize;
-    pSensorStateDelay = millis();
-    printResult(lResult);
     return lResult;
 }
 

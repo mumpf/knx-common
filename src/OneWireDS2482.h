@@ -66,9 +66,10 @@ class OneWireDS2482
 
     // callback definition, called if new id is found, with reference to newly created sensor
     typedef bool (*foundNewId)(OneWire *);
+    typedef void (*loopCallback)();
 
-    OneWireDS2482(foundNewId iNewIdCallback);
-    OneWireDS2482(uint8_t iI2cAddressOffset, foundNewId iNewIdCallback);
+    OneWireDS2482(foundNewId iNewIdCallback, loopCallback iLoopCallback);
+    OneWireDS2482(uint8_t iI2cAddressOffset, foundNewId iNewIdCallback, loopCallback iLoopCallback);
 
     void setup(bool iSearchNewDevices, bool iSearchIButtons);
     void loop();
@@ -121,6 +122,7 @@ class OneWireDS2482
     uint8_t mI2cAddress;
     uint8_t mError;
     foundNewId fNewIdCallback = 0;
+    loopCallback fLoopCallback = 0;
 
     StateBM mState = Init;
     uint32_t mDelay = 0;

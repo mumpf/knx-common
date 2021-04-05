@@ -82,7 +82,7 @@ class Sensor
     static void saveState();
     static void restartSensors();
     static bool beginSensors();
-    // static void changeSensorOrder(Sensor *iSensor, uint8_t iPosition);
+    static uint8_t getMaxI2cSpeed();
    
     virtual uint8_t getI2cSpeed();
 

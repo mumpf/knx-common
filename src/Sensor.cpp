@@ -67,10 +67,17 @@ bool Sensor::beginSensors()
         Wire.begin();
         Wire.setClock(sMaxI2cSpeed * 100000);
         delay(1);
-        for (uint8_t lCounter = 0; lCounter < sNumSensors; lCounter++)
-            lResult = sSensors[lCounter]->begin() && lResult;
+        // we use standard Wakeup procedure to start single sensors
+        // for (uint8_t lCounter = 0; lCounter < sNumSensors; lCounter++)
+        //     lResult = sSensors[lCounter]->begin() && lResult;
     }
     return lResult;
+}
+
+// static
+uint8_t Sensor::getMaxI2cSpeed()
+{
+    return sMaxI2cSpeed; // n * 100kHz
 }
 
 void Sensor::restartSensor() {

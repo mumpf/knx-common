@@ -15,18 +15,21 @@
 
 // #define DebugInfoBM
 
-OneWireDS2482::OneWireDS2482(uint8_t iI2cAddressOffset, foundNewId iNewIdCallback)
+OneWireDS2482::OneWireDS2482(uint8_t iI2cAddressOffset, foundNewId iNewIdCallback, loopCallback iLoopCallback)
 {
 	// Address is determined by two pins on the DS2482 AD1/AD0
 	// Pass 0b00, 0b01, 0b10 or 0b11
     mI2cAddress = I2C_1WIRE_DEVICE_ADDRESSS | iI2cAddressOffset;
     fNewIdCallback = iNewIdCallback;
+    fLoopCallback = iLoopCallback;
     mError = 0;
     mSearchPrio = new OneWireSearchFirst(this);
     mSearchNormal = new OneWireSearchFirst(this);
 }
 
-OneWireDS2482::OneWireDS2482(foundNewId iNewIdCallback) : OneWireDS2482(0, iNewIdCallback) {}
+OneWireDS2482::OneWireDS2482(foundNewId iNewIdCallback, loopCallback iLoopCallback)
+    : OneWireDS2482(0, iNewIdCallback, iLoopCallback)
+{}
 
 void OneWireDS2482::setup(bool iSearchNewDevices, bool iSearchIButtons)
 {
@@ -429,10 +432,13 @@ uint8_t OneWireDS2482::waitOnBusy(bool iSetReadPointer)
 
 	for(int i=1000; i>0; i--)
 	{
-		status = readStatus(iSetReadPointer);;
-		if (!(status & DS2482_STATUS_BUSY))
+        delayMicroseconds(20);
+        status = readStatus(iSetReadPointer);
+        if (!(status & DS2482_STATUS_BUSY))
 			break;
-		delayMicroseconds(20);
+        if (fLoopCallback != 0) {
+            fLoopCallback();
+        }
 	}
 
 	// if we have reached this point and we are still busy, there is an error
