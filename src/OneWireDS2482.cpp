@@ -15,11 +15,10 @@
 
 // #define DebugInfoBM
 
-OneWireDS2482::OneWireDS2482(uint8_t iI2cAddressOffset, foundNewId iNewIdCallback, loopCallback iLoopCallback)
+OneWireDS2482::OneWireDS2482(foundNewId iNewIdCallback, loopCallback iLoopCallback)
 {
 	// Address is determined by two pins on the DS2482 AD1/AD0
 	// Pass 0b00, 0b01, 0b10 or 0b11
-    mI2cAddress = I2C_1WIRE_DEVICE_ADDRESSS | iI2cAddressOffset;
     fNewIdCallback = iNewIdCallback;
     fLoopCallback = iLoopCallback;
     mError = 0;
@@ -27,23 +26,20 @@ OneWireDS2482::OneWireDS2482(uint8_t iI2cAddressOffset, foundNewId iNewIdCallbac
     mSearchNormal = new OneWireSearchFirst(this);
 }
 
-OneWireDS2482::OneWireDS2482(foundNewId iNewIdCallback, loopCallback iLoopCallback)
-    : OneWireDS2482(0, iNewIdCallback, iLoopCallback)
-{}
-
-void OneWireDS2482::setup(bool iSearchNewDevices, bool iSearchIButtons)
+void OneWireDS2482::setup(uint8_t iI2cAddressOffset, bool iSearchNewDevices, bool iSearchIButtons, uint8_t itRSTL, uint8_t itMSP, uint8_t itW0L, uint8_t itREC0, uint8_t iRWPU)
 {
+    mI2cAddress = I2C_1WIRE_DEVICE_ADDRESSS | iI2cAddressOffset;
     deviceReset();
     setActivePullup();
     // setStrongPullup();
 
     // for a DS2484 we set some timing parameters, currently just standard speed
     // according values see Table 7 in Datasheet (knx-common/doc/DS2484.pdf), page 13.
-    uint8_t tRSTL = DS2484_PORT_tRSTL | DS2484_PORT_SPEED_STD | 0x6; // 0.560 ms
-    uint8_t tMSP = DS2484_PORT_tMSP | DS2484_PORT_SPEED_STD | 0x6;   // 0.068 ms
-    uint8_t tW0L = DS2484_PORT_tW0L | DS2484_PORT_SPEED_STD | 0x6;   // 0.064 ms
-    uint8_t tREC0 = DS2484_PORT_tREC0 | DS2484_PORT_SPEED_STD | 0x6; // 0.00525 ms
-    uint8_t RWPU = DS2484_PORT_RWPU | DS2484_PORT_SPEED_STD | 0x6;   // 1000 Ohm
+    uint8_t tRSTL = DS2484_PORT_tRSTL | DS2484_PORT_SPEED_STD | itRSTL; // 0.560 ms
+    uint8_t tMSP = DS2484_PORT_tMSP | DS2484_PORT_SPEED_STD | itMSP;    // 0.068 ms
+    uint8_t tW0L = DS2484_PORT_tW0L | DS2484_PORT_SPEED_STD | itW0L;    // 0.064 ms
+    uint8_t tREC0 = DS2484_PORT_tREC0 | DS2484_PORT_SPEED_STD | itREC0; // 0.00525 ms
+    uint8_t RWPU = DS2484_PORT_RWPU | DS2484_PORT_SPEED_STD | iRWPU;    // 1000 Ohm
 
     adjustPort(tRSTL);
     adjustPort(tMSP);
@@ -60,6 +56,9 @@ void OneWireDS2482::setup(bool iSearchNewDevices, bool iSearchIButtons)
 
 void OneWireDS2482::loop()
 {
+    if (mI2cAddress == 0)
+        return;
+
     switch (mState)
 	{
         case Init:

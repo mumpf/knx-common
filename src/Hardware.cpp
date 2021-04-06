@@ -6,6 +6,8 @@
 #include <Adafruit_SleepyDog.h>
 #endif
 
+uint8_t boardHardware = 0;
+
 void savePower() {
     printDebug("savePower: Switching off 5V rail...\n");
     // turn off 5V rail (CO2-Sensor, Buzzer, RGB-LED-Driver, 1-Wire-Busmaster)
@@ -91,6 +93,8 @@ bool boardCheck()
     // ceck for I2C ack
     Wire.beginTransmission(I2C_EEPROM_DEVICE_ADDRESSS);
     lResult = (Wire.endTransmission() == 0);
+    if (lResult)
+        boardHardware |= BOARD_HW_EEPROM;
     printResult(lResult);
 #endif
 
@@ -99,6 +103,8 @@ bool boardCheck()
     // ceck for I2C ack
     Wire.beginTransmission(I2C_1WIRE_DEVICE_ADDRESSS);
     lResult = (Wire.endTransmission() == 0);
+    if (lResult)
+        boardHardware |= BOARD_HW_ONEWIRE;
     printResult(lResult);
 #endif
 
@@ -107,6 +113,8 @@ bool boardCheck()
     // ceck for I2C ack
     Wire.beginTransmission(I2C_RGBLED_DEVICE_ADDRESS);
     lResult = (Wire.endTransmission() == 0);
+    if (lResult)
+        boardHardware |= BOARD_HW_LED;
     printResult(lResult);
 #endif
 
@@ -135,7 +143,29 @@ bool boardCheck()
         }
     }
     printResult(lResult);
+    if (lResult)
+        boardHardware |= BOARD_HW_NCN5130;
     return lResult;
+}
+
+bool boardWithOneWire()
+{
+    return (boardHardware & BOARD_HW_ONEWIRE);
+}
+
+bool boardWithLed()
+{
+    return (boardHardware & BOARD_HW_LED);
+}
+
+bool boardWithEEPROM()
+{
+    return (boardHardware & BOARD_HW_EEPROM);
+}
+
+bool boardWithNCN5130()
+{
+    return (boardHardware & BOARD_HW_NCN5130);
 }
 
 /**

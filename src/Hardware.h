@@ -181,9 +181,19 @@
 #define ACR0_FLAG_TRIGEN           0x08
 #define ACR0_FLAG_V20VCLIMIT       0x04
 
+#define BOARD_HW_EEPROM  0x01
+#define BOARD_HW_LED     0x02
+#define BOARD_HW_ONEWIRE 0x04
+#define BOARD_HW_NCN5130 0x08
+
 // call this BEFORE Wire.begin()
 // it clears I2C Bus, calls Wire.begin() and checks which board hardware is available
 bool boardCheck();
+// just work after boardCheck
+bool boardWithOneWire();
+bool boardWithLed();
+bool boardWithEEPROM();
+bool boardWithNCN5130();
 // Turn off 5V rail from NCN5130 to save power for EEPROM write during knx save operation
 void savePower();
 // Turn on 5V rail from NCN5130 in case SAVE-Interrupt was false positive

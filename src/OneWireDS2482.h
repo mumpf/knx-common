@@ -69,9 +69,8 @@ class OneWireDS2482
     typedef void (*loopCallback)();
 
     OneWireDS2482(foundNewId iNewIdCallback, loopCallback iLoopCallback);
-    OneWireDS2482(uint8_t iI2cAddressOffset, foundNewId iNewIdCallback, loopCallback iLoopCallback);
 
-    void setup(bool iSearchNewDevices, bool iSearchIButtons);
+    void setup(uint8_t iI2cAddressOffset, bool iSearchNewDevices, bool iSearchIButtons, uint8_t itRSTL, uint8_t itMSP = 6, uint8_t itW0L = 6, uint8_t itREC0 = 6, uint8_t iRWPU = 6);
     void loop();
 
     uint8_t getI2cAddress();
@@ -119,7 +118,7 @@ class OneWireDS2482
     OneWireSearch *mSearchPrio = NULL;
     OneWireSearch *mSearchNormal = NULL;
 
-    uint8_t mI2cAddress;
+    uint8_t mI2cAddress = 0;
     uint8_t mError;
     foundNewId fNewIdCallback = 0;
     loopCallback fLoopCallback = 0;
