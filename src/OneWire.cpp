@@ -37,7 +37,7 @@ OneWire::SensorMode OneWire::Mode() {
 
 void OneWire::setModeConnected(bool iForce /* = false */)
 {
-    if (iForce || pSearchCount >= cMaxCount) {
+    if (iForce || pSearchCount >= cDisappearCount) {
         pMode = Connected;
         pSearchCount = 0;
     }
@@ -45,7 +45,7 @@ void OneWire::setModeConnected(bool iForce /* = false */)
 
 void OneWire::setModeDisconnected(bool iForce /* = false */)
 {
-    if (iForce || pSearchCount >= cMaxCount)
+    if (iForce || pSearchCount >= cDisappearCount)
     {
         pMode = Disconnected;
         pSearchCount = 0;

@@ -70,12 +70,13 @@ class OneWireDS2482
 
     OneWireDS2482(foundNewId iNewIdCallback, loopCallback iLoopCallback);
 
-    void setup(uint8_t iI2cAddressOffset, bool iSearchNewDevices, bool iSearchIButtons, uint8_t itRSTL, uint8_t itMSP = 6, uint8_t itW0L = 6, uint8_t itREC0 = 6, uint8_t iRWPU = 6);
+    bool setup(uint8_t iInstanceId, uint8_t iI2cAddressOffset, bool iSearchNewDevices, bool iSearchIButtons);
+    bool setupTiming(uint8_t itRSTL, uint8_t itMSP, uint8_t itW0L, uint8_t itREC0, uint8_t iRWPU);
     void loop();
 
     uint8_t getI2cAddress();
     uint8_t getError();
-    uint8_t checkI2cPresence();
+    bool checkI2cPresence();
 
     OneWire *Sensor(uint8_t iIndex);
     uint8_t DeviceCount();
@@ -109,7 +110,10 @@ class OneWireDS2482
     uint8_t end();
     void writeByte(uint8_t);
     uint8_t readByte();
+    // DS2484 only
     void adjustPort(uint8_t iData);
+    uint8_t gInstance = 255; //just for debug 0-3
+    uint8_t mI2cAddress = 0;
 
   private:
     bool ProcessPriorityBusUse();
@@ -118,7 +122,6 @@ class OneWireDS2482
     OneWireSearch *mSearchPrio = NULL;
     OneWireSearch *mSearchNormal = NULL;
 
-    uint8_t mI2cAddress = 0;
     uint8_t mError;
     foundNewId fNewIdCallback = 0;
     loopCallback fLoopCallback = 0;
@@ -128,6 +131,8 @@ class OneWireDS2482
 
     OneWire *mSensor[30];
     uint8_t mDeviceCount = 0;
+    uint8_t mProcessNormalSensorIndex = 0;
+    uint8_t mProcessPrioSensorIndex = 0;
 
     bool mSearchIButton = true;
     bool mSearchNewDevices = true;

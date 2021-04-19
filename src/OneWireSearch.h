@@ -44,6 +44,7 @@ class OneWireSearch
   protected:
     OneWireDS2482 *mBM = NULL;
     uint32_t mDelay = 0;
+    uint8_t gInstance = 255;
 
 #ifdef DebugInfoSearch
     uint32_t mDuration = 0;

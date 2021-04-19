@@ -104,8 +104,9 @@ class OneWire {
     uint32_t pDelay = 0;
     bool pValid = false; // is Value really valid?
 
-    // just test
-    const int cMaxCount = 2;
+    // How many cycles might a 1-Wire device disappear from bus before it is 
+    // marked as not available
+    const int cDisappearCount = 2;
 
     SensorMode pMode = New;
     SensorPriority pPrio = PrioLow;

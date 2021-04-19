@@ -54,10 +54,16 @@ class OneWireDS2438 : public OneWire
     StateSensorADC mState = Startup;
 
     bool mParasite;
+    
     float mTemp = NAN;
     float mVDD = NAN;
     float mVAD = NAN;
     float mVSens = NAN;
+
+    float mTmpTemp = NAN;
+    float mTmpVDD = NAN;
+    float mTmpVAD = NAN;
+    float mTmpVSens = NAN;
 
     void init();
     void readScratchPad();

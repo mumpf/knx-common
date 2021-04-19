@@ -23,7 +23,8 @@
 #define PROG_BUTTON_PIN 11
 #define PROG_BUTTON_PIN_INTERRUPT_ON FALLING
 #define SAVE_INTERRUPT_PIN 8
-#define LED_YELLOW_PIN 38
+#define INFO_LED_PIN 38
+#define INFO_LED_PIN_ACTIVE_ON HIGH
 #define COUNT_1WIRE_BUSMASTER 1
 #define COUNT_1WIRE_CHANNEL 30
 // Buzzer
@@ -38,7 +39,8 @@
 #define PROG_BUTTON_PIN 11
 #define PROG_BUTTON_PIN_INTERRUPT_ON FALLING
 #define SAVE_INTERRUPT_PIN 8
-#define LED_YELLOW_PIN 38
+#define INFO_LED_PIN 38
+#define INFO_LED_PIN_ACTIVE_ON HIGH
 #define COUNT_1WIRE_BUSMASTER 1
 #define COUNT_1WIRE_CHANNEL 30
 // Buzzer
@@ -53,7 +55,8 @@
 #define PROG_BUTTON_PIN 11
 #define PROG_BUTTON_PIN_INTERRUPT_ON FALLING
 #define SAVE_INTERRUPT_PIN A2 // 8
-#define LED_YELLOW_PIN 38
+#define INFO_LED_PIN 38
+#define INFO_LED_PIN_ACTIVE_ON HIGH
 #define COUNT_1WIRE_BUSMASTER 1
 #define COUNT_1WIRE_CHANNEL 30
 // Buzzer
@@ -68,7 +71,8 @@
 #define PROG_BUTTON_PIN 12
 #define PROG_BUTTON_PIN_INTERRUPT_ON FALLING
 #define SAVE_INTERRUPT_PIN A2 // 8
-#define LED_YELLOW_PIN 38
+#define INFO_LED_PIN 38
+#define INFO_LED_PIN_ACTIVE_ON HIGH
 #define COUNT_1WIRE_BUSMASTER 1
 #define COUNT_1WIRE_CHANNEL 30
 // Buzzer
@@ -83,7 +87,8 @@
 #define PROG_BUTTON_PIN 12
 #define PROG_BUTTON_PIN_INTERRUPT_ON FALLING
 #define SAVE_INTERRUPT_PIN A2 // 8
-#define LED_YELLOW_PIN 38
+#define INFO_LED_PIN 38
+#define INFO_LED_PIN_ACTIVE_ON HIGH
 #define COUNT_1WIRE_BUSMASTER 1
 #define COUNT_1WIRE_CHANNEL 30
 // Buzzer
@@ -97,28 +102,28 @@
 #define PROG_LED_PIN_ACTIVE_ON HIGH
 #define PROG_BUTTON_PIN 11
 #define PROG_BUTTON_PIN_INTERRUPT_ON FALLING
-#define LED_YELLOW_PIN 38
+#define INFO_LED_PIN 38
+#define INFO_LED_PIN_ACTIVE_ON HIGH
 // Buzzer
 #define I2C_EEPROM_DEVICE_ADDRESSS 0x50 // Address of 24LC256 eeprom chip
 #endif
 #ifdef BOARD_MASIFI_ONEWIRE
-#define PROG_LED_PIN 13
+#define PROG_LED_PIN 26
 #define PROG_LED_PIN_ACTIVE_ON HIGH
 #define PROG_BUTTON_PIN A1
 #define PROG_BUTTON_PIN_INTERRUPT_ON FALLING
-#define LED_YELLOW_PIN 25
+#define INFO_LED_PIN 25
+#define INFO_LED_PIN_ACTIVE_ON HIGH
 #define COUNT_1WIRE_BUSMASTER 3
 #define COUNT_1WIRE_CHANNEL 90
-#define I2C_1WIRE_DEVICE_ADDRESSS 0x18 // Address of DS2484 1-Wire-Busmaster chip
+#define I2C_1WIRE_DEVICE_ADDRESSS 0x18 // Address of first DS2482 1-Wire-Busmaster chip, used are 0x19, 0x1A, 0x1B
 #define I2C_EEPROM_DEVICE_ADDRESSS 0x50 // Address of 24LC256 eeprom chip
 #endif
 
 // board independent definitions
-#define BUZZER_FREQ_LOUD 2400
-#define BUZZER_FREQ_NORMAL 4000
-#define BUZZER_FREQ_SILENT 1800
 
 // fatal error codes
+#define FATAL_I2C_BUSY                3  // I2C busy during startup
 #define FATAL_LOG_WRONG_CHANNEL_COUNT 4  // knxprod contains more channels than logic supports
 #define FATAL_SENS_UNKNOWN            5  // unknown or unsupported sensor
 
@@ -194,6 +199,9 @@ bool boardWithOneWire();
 bool boardWithLed();
 bool boardWithEEPROM();
 bool boardWithNCN5130();
+
+void ledInfo(bool iOn);
+void ledProg(bool iOn);
 // Turn off 5V rail from NCN5130 to save power for EEPROM write during knx save operation
 void savePower();
 // Turn on 5V rail from NCN5130 in case SAVE-Interrupt was false positive

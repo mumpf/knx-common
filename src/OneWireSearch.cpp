@@ -60,7 +60,7 @@ bool OneWireSearch::MatchSearchMode(uint8_t iFamily)
  * Due to the fact, that 1W-Devices might disappear shortly from bus
  * because of a short on the line or signal errors, we count such 
  * events and do a state change only if the event lasts for a specific
- * number of times (see cMaxCount)
+ * number of times (see cDisappearCount)
  * **************************************/
 void OneWireSearch::manageSearchCounter(OneWireSearch::SearchState iState) {
     for (uint8_t i = 0; i < mBM->DeviceCount(); i++)
@@ -158,7 +158,7 @@ OneWireSearch::SearchState OneWireSearch::loop()
             lDuration = millis() - mDuration;
 			if (abs(mDurationOld - lDuration) > 5) { 
 				// print only if there is a big difference between cycles
-                printDebug("Finished search %s, took %d ms, max blocking was %d ms\n", mSearchMode == Family ? "Family" : "NoFamily", lDuration, mMaxDelay);
+                printDebug("(0x%X) Finished search %s (%s), took %d ms, max blocking was %d ms\n", mBM->mI2cAddress, mSearchMode == Family ? "Family" : "NoFamily", mSearchResultId, lDuration, mMaxDelay);
                 mDurationOld = lDuration;
             }
 #endif

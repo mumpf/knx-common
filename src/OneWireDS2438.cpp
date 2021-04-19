@@ -56,6 +56,14 @@ void OneWireDS2438::loop()
             if (delayCheck(pDelay, 10)) {
                 mState = updateVAD() ? Idle : Error;
                 pDelay = millis();
+                if (mState == Idle) {
+                    // here we ensure, that each measured value 
+                    // consists of all values got a the same time
+                    mTemp = mTmpTemp;
+                    mVAD = mTmpVAD;
+                    mVDD = mTmpVDD;
+                    mVSens = mTmpVSens;
+                }
             }
             break;
         case Idle:
@@ -188,7 +196,7 @@ bool OneWireDS2438::updateTemp()
     //return tempC (ignore 3 lsb as they are always 0);
     int16_t lTempRaw = (((int16_t)mScratchPad[TEMP_MSB]) << 5) | (mScratchPad[TEMP_LSB] >> 3);
 
-    mTemp = (float)lTempRaw * 0.03125;
+    mTmpTemp = (float)lTempRaw * 0.03125;
     return true;
 }
 
@@ -208,7 +216,7 @@ bool OneWireDS2438::updateVDD()
 
     int16_t lVoltRaw = (((int16_t)mScratchPad[VOLT_MSB]) << 8) | mScratchPad[VOLT_LSB];
 
-    mVDD = (float)lVoltRaw * 0.01;
+    mTmpVDD = (float)lVoltRaw * 0.01;
     return true;
 }
 
@@ -219,12 +227,12 @@ bool OneWireDS2438::updateVAD()
     readScratchPad();
 
     int16_t lVoltRaw = (((int16_t)mScratchPad[VOLT_MSB]) << 8) | mScratchPad[VOLT_LSB];
-    mVAD = (float)lVoltRaw * 0.01;
+    mTmpVAD = (float)lVoltRaw * 0.01;
 
     lVoltRaw = (((int16_t)mScratchPad[CURR_MSB]) << 8) | mScratchPad[CURR_MSB];
-    mVSens = (double)lVoltRaw * 0.0002441;
+    mTmpVSens = (double)lVoltRaw * 0.0002441;
 
-    lResult = mVAD != NAN;
+    lResult = mTmpVAD != NAN;
     pValid = lResult;
     return lResult;
 }

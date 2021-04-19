@@ -17,8 +17,6 @@
 
 OneWireDS2482::OneWireDS2482(foundNewId iNewIdCallback, loopCallback iLoopCallback)
 {
-	// Address is determined by two pins on the DS2482 AD1/AD0
-	// Pass 0b00, 0b01, 0b10 or 0b11
     fNewIdCallback = iNewIdCallback;
     fLoopCallback = iLoopCallback;
     mError = 0;
@@ -26,13 +24,31 @@ OneWireDS2482::OneWireDS2482(foundNewId iNewIdCallback, loopCallback iLoopCallba
     mSearchNormal = new OneWireSearchFirst(this);
 }
 
-void OneWireDS2482::setup(uint8_t iI2cAddressOffset, bool iSearchNewDevices, bool iSearchIButtons, uint8_t itRSTL, uint8_t itMSP, uint8_t itW0L, uint8_t itREC0, uint8_t iRWPU)
+bool OneWireDS2482::setup(uint8_t iInstanceId, uint8_t iI2cAddressOffset, bool iSearchNewDevices, bool iSearchIButtons)
 {
     mI2cAddress = I2C_1WIRE_DEVICE_ADDRESSS | iI2cAddressOffset;
-    deviceReset();
-    setActivePullup();
-    // setStrongPullup();
+    gInstance = iInstanceId;
+    if (checkI2cPresence())
+    {
+        deviceReset();
+        setActivePullup();
+        // setStrongPullup();
 
+        mState = Init;
+        mSearchNewDevices = iSearchNewDevices;
+        mSearchIButton = iSearchIButtons;
+    }
+    else
+    {
+        mState = Error;
+        mSearchNewDevices = false;
+        mSearchIButton = false;
+    }
+    return (mState != Error);
+}
+
+bool OneWireDS2482::setupTiming(uint8_t itRSTL, uint8_t itMSP, uint8_t itW0L, uint8_t itREC0, uint8_t iRWPU)
+{
     // for a DS2484 we set some timing parameters, currently just standard speed
     // according values see Table 7 in Datasheet (knx-common/doc/DS2484.pdf), page 13.
     uint8_t tRSTL = DS2484_PORT_tRSTL | DS2484_PORT_SPEED_STD | itRSTL; // 0.560 ms
@@ -48,10 +64,7 @@ void OneWireDS2482::setup(uint8_t iI2cAddressOffset, bool iSearchNewDevices, boo
     adjustPort(RWPU);
 
     // TODO: Check if port adjustment worked
-
-    mState = Init;
-    mSearchNewDevices = iSearchNewDevices;
-    mSearchIButton = iSearchIButtons;
+    return true;
 }
 
 void OneWireDS2482::loop()
@@ -146,22 +159,25 @@ void OneWireDS2482::loop()
             break;
         default:
             mState = Error;
-            // as long as there is a short, we stay in error state
-            bool lShortWire = readStatusShortDet();
-            if (lShortWire) {
-				if (delayCheck(mDelay, 10)) {
-                    wireReset();
-                    mDelay = millis();
+            // as long as there is no Busmaster available, we stay in this state
+            if (checkI2cPresence()) {
+                // as long as there is a short, we stay in error state
+                bool lShortWire = readStatusShortDet();
+                if (lShortWire) {
+                    if (delayCheck(mDelay, 10)) {
+                        wireReset();
+                        mDelay = millis();
+                    }
+                } else {
+                    // we wait a Moment and afterwards start over
+                    if (delayCheck(mDelay, 10)) {
+                        mState = SearchIButton;
+                        // reset all device counter
+                        mSearchPrio->manageSearchCounter(OneWireSearch::SearchError);
+                        mSearchNormal->manageSearchCounter(OneWireSearch::SearchError);
+                    }
                 }
-            } else {
-                // we wait a Moment and afterwards start over
-				if (delayCheck(mDelay, 10)) {
-                    mState = SearchIButton;
-					// reset all device counter
-                    mSearchPrio->manageSearchCounter(OneWireSearch::SearchError);
-                    mSearchNormal->manageSearchCounter(OneWireSearch::SearchError);
-                }
-			}
+            }
             break;
 	}
 }
@@ -169,38 +185,36 @@ void OneWireDS2482::loop()
 // returns false while the method iterates thrugh sensor list, true if finished the list
 bool OneWireDS2482::ProcessPriorityBusUse()
 {
-    static int8_t sSensorIndex = 0;
     bool lFound = false;
     // priority use means to evaluate a Priority sensor with each iternation 
 	// so we search for a prio sensor and do the according action
-	while (sSensorIndex < mDeviceCount && !lFound) {
-	    OneWire *lSensor = mSensor[sSensorIndex++];
+	while (mProcessPrioSensorIndex < mDeviceCount && !lFound) {
+	    OneWire *lSensor = mSensor[mProcessPrioSensorIndex++];
 		if (lSensor->Prio() == OneWire::PrioNormal && lSensor->Mode() == OneWire::Connected) {
 			lSensor->loop();
             lFound = true;
         }
 	}
-    if (sSensorIndex >= mDeviceCount)
-        sSensorIndex = 0;
-    return (sSensorIndex == 0);
+    if (mProcessPrioSensorIndex >= mDeviceCount)
+        mProcessPrioSensorIndex = 0;
+    return (mProcessPrioSensorIndex == 0);
 }
 
 // returns false while the method iterates thrugh sensor list, true if finished the list
 bool OneWireDS2482::ProcessNormalBusUse()
 {
-    static int8_t sSensorIndex = 0;
-    if (sSensorIndex >= mDeviceCount) {
-        sSensorIndex = 0;
+    if (mProcessNormalSensorIndex >= mDeviceCount) {
+        mProcessNormalSensorIndex = 0;
         return true; // no sensors available or wrong sensor index
 	}
-    OneWire *lSensor = mSensor[sSensorIndex++];
+    OneWire *lSensor = mSensor[mProcessNormalSensorIndex++];
     if (lSensor->Prio() == OneWire::PrioLow && lSensor->Mode() == OneWire::Connected)
     {
         lSensor->loop();
     }
-    if (sSensorIndex >= mDeviceCount)
-        sSensorIndex = 0;
-    return (sSensorIndex == 0);
+    if (mProcessNormalSensorIndex >= mDeviceCount)
+        mProcessNormalSensorIndex = 0;
+    return (mProcessNormalSensorIndex == 0);
 }
 
 // Factory method, creates OneWireSensors just in case, they do not exist
@@ -352,10 +366,10 @@ uint8_t OneWireDS2482::readByte()
 
 // Simply starts and ends an Wire transmission
 // If no devices are present, this returns false
-uint8_t OneWireDS2482::checkI2cPresence()
+bool OneWireDS2482::checkI2cPresence()
 {
 	begin();
-	return !end() ? true : false;
+	return (end() == 0);
 }
 
 // Performs a global reset of device state machine logic. Terminates any ongoing 1-Wire communication.
@@ -435,7 +449,7 @@ uint8_t OneWireDS2482::waitOnBusy(bool iSetReadPointer)
         status = readStatus(iSetReadPointer);
         if (!(status & DS2482_STATUS_BUSY))
 			break;
-        if (fLoopCallback != 0) {
+        if (fLoopCallback != 0 && (i % 100) == 99) {
             fLoopCallback();
         }
 	}

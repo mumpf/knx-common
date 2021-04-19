@@ -8,15 +8,30 @@
 
 uint8_t boardHardware = 0;
 
-void savePower() {
+void ledInfo(bool iOn)
+{
+#ifdef INFO_LED_PIN
+    digitalWrite(INFO_LED_PIN, INFO_LED_PIN_ACTIVE_ON == iOn);
+#endif
+}
+
+void ledProg(bool iOn)
+{
+#ifdef PROG_LED_PIN
+    digitalWrite(PROG_LED_PIN, PROG_LED_PIN_ACTIVE_ON == iOn);
+#endif
+}
+
+void savePower()
+{
     printDebug("savePower: Switching off 5V rail...\n");
     // turn off 5V rail (CO2-Sensor, Buzzer, RGB-LED-Driver, 1-Wire-Busmaster)
     uint8_t lBuffer[] = {U_INT_REG_WR_REQ_ACR0, ACR0_FLAG_XCLKEN | ACR0_FLAG_V20VCLIMIT };
     // get rid of knx reference
     Serial1.write(lBuffer, 2);
     // Turn off on-board leds
-    digitalWrite(PROG_LED_PIN, LOW);
-    digitalWrite(LED_YELLOW_PIN, LOW);
+    ledProg(false);
+    ledInfo(false);
 }
 
 void restorePower(){
@@ -34,24 +49,22 @@ void fatalError(uint8_t iErrorCode, const char* iErrorText) {
 #ifdef WATCHDOG
     Watchdog.disable();
 #endif
-    pinMode(LED_BUILTIN, OUTPUT);
-    pinMode(LED_YELLOW_PIN, OUTPUT);
     for (;;)
     {
         // we repeat the message on serial bus, so we can get it even 
         // if we connect USB later
         printDebug("FatalError %d: %s\n", iErrorCode, iErrorText);
-        digitalWrite(LED_YELLOW_PIN, HIGH);
+        ledInfo(true);
         delay(lDelay);
         // number of red blinks during a yellow blink is the error code
         for (uint8_t i = 0; i < iErrorCode; i++)
         {
-            digitalWrite(LED_BUILTIN, HIGH);
+            ledProg(true);
             delay(lDelay);
-            digitalWrite(LED_BUILTIN, LOW);
+            ledProg(false);
             delay(lDelay);
         }
-        digitalWrite(LED_YELLOW_PIN, LOW);
+        ledInfo(false);
         delay(lDelay * 5);
     }
 }
@@ -66,6 +79,13 @@ bool boardCheck()
     Wire.end(); // in case, Wire.begin() was called before
     uint8_t lI2c = 0;
     lI2c = clearI2cBus(); // clear the I2C bus first before calling Wire.begin()
+    if (lI2c != 0) {
+        // we try to turn off power for the attached sensors or Hardware. Does not work on all devices
+        savePower();
+        delay(5000);
+        restorePower();
+        lI2c = clearI2cBus();
+    }
     switch (lI2c)
     {
     case 1:
@@ -85,7 +105,7 @@ bool boardCheck()
     }
 
     if (!lResult) {
-        fatalError(5, "Failed to initialize I2C-Bus");
+        fatalError(FATAL_I2C_BUSY, "Failed to initialize I2C-Bus");
     }
 #ifdef I2C_EEPROM_DEVICE_ADDRESSS
     // we check herer Hardware we rely on

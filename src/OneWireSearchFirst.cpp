@@ -5,6 +5,7 @@ OneWireSearchFirst::OneWireSearchFirst(OneWireDS2482* iBM)
     : OneWireSearch(iBM)
 {
     mBM = iBM;
+    gInstance = iBM->gInstance;
     mSearchState = SearchNew;
 }
 
