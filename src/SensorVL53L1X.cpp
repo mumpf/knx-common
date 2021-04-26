@@ -57,7 +57,7 @@ float SensorVL53L1X::measureValue(MeasureType iMeasureType)
     default:
         break;
     }
-    return NAN;
+    return NO_NUM;
 }
 
 bool SensorVL53L1X::begin()

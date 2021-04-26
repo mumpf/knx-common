@@ -86,130 +86,130 @@ float OneWireDS2438Fromula::userFunction4(float iTemp, float iVDD, float iVAD, f
 
 float OneWireDS2438Fromula::userFunction5(float iTemp, float iVDD, float iVAD, float iVSens)
 {
-    return NAN;
+    return NO_NUM;
 }
 
 float OneWireDS2438Fromula::userFunction6(float iTemp, float iVDD, float iVAD, float iVSens)
 {
-    return NAN;
+    return NO_NUM;
 }
 
 float OneWireDS2438Fromula::userFunction7(float iTemp, float iVDD, float iVAD, float iVSens)
 {
-    return NAN;
+    return NO_NUM;
 }
 
 float OneWireDS2438Fromula::userFunction8(float iTemp, float iVDD, float iVAD, float iVSens)
 {
-    return NAN;
+    return NO_NUM;
 }
 
 float OneWireDS2438Fromula::userFunction9(float iTemp, float iVDD, float iVAD, float iVSens)
 {
-    return NAN;
+    return NO_NUM;
 }
 
 float OneWireDS2438Fromula::userFunction10(float iTemp, float iVDD, float iVAD, float iVSens)
 {
-    return NAN;
+    return NO_NUM;
 }
 
 float OneWireDS2438Fromula::userFunction11(float iTemp, float iVDD, float iVAD, float iVSens)
 {
-    return NAN;
+    return NO_NUM;
 }
 
 float OneWireDS2438Fromula::userFunction12(float iTemp, float iVDD, float iVAD, float iVSens)
 {
-    return NAN;
+    return NO_NUM;
 }
 
 float OneWireDS2438Fromula::userFunction13(float iTemp, float iVDD, float iVAD, float iVSens)
 {
-    return NAN;
+    return NO_NUM;
 }
 
 float OneWireDS2438Fromula::userFunction14(float iTemp, float iVDD, float iVAD, float iVSens)
 {
-    return NAN;
+    return NO_NUM;
 }
 
 float OneWireDS2438Fromula::userFunction15(float iTemp, float iVDD, float iVAD, float iVSens)
 {
-    return NAN;
+    return NO_NUM;
 }
 
 float OneWireDS2438Fromula::userFunction16(float iTemp, float iVDD, float iVAD, float iVSens)
 {
-    return NAN;
+    return NO_NUM;
 }
 
 float OneWireDS2438Fromula::userFunction17(float iTemp, float iVDD, float iVAD, float iVSens)
 {
-    return NAN;
+    return NO_NUM;
 }
 
 float OneWireDS2438Fromula::userFunction18(float iTemp, float iVDD, float iVAD, float iVSens)
 {
-    return NAN;
+    return NO_NUM;
 }
 
 float OneWireDS2438Fromula::userFunction19(float iTemp, float iVDD, float iVAD, float iVSens)
 {
-    return NAN;
+    return NO_NUM;
 }
 
 float OneWireDS2438Fromula::userFunction20(float iTemp, float iVDD, float iVAD, float iVSens)
 {
-    return NAN;
+    return NO_NUM;
 }
 
 float OneWireDS2438Fromula::userFunction21(float iTemp, float iVDD, float iVAD, float iVSens)
 {
-    return NAN;
+    return NO_NUM;
 }
 
 float OneWireDS2438Fromula::userFunction22(float iTemp, float iVDD, float iVAD, float iVSens)
 {
-    return NAN;
+    return NO_NUM;
 }
 
 float OneWireDS2438Fromula::userFunction23(float iTemp, float iVDD, float iVAD, float iVSens)
 {
-    return NAN;
+    return NO_NUM;
 }
 
 float OneWireDS2438Fromula::userFunction24(float iTemp, float iVDD, float iVAD, float iVSens)
 {
-    return NAN;
+    return NO_NUM;
 }
 
 float OneWireDS2438Fromula::userFunction25(float iTemp, float iVDD, float iVAD, float iVSens)
 {
-    return NAN;
+    return NO_NUM;
 }
 
 float OneWireDS2438Fromula::userFunction26(float iTemp, float iVDD, float iVAD, float iVSens)
 {
-    return NAN;
+    return NO_NUM;
 }
 
 float OneWireDS2438Fromula::userFunction27(float iTemp, float iVDD, float iVAD, float iVSens)
 {
-    return NAN;
+    return NO_NUM;
 }
 
 float OneWireDS2438Fromula::userFunction28(float iTemp, float iVDD, float iVAD, float iVSens)
 {
-    return NAN;
+    return NO_NUM;
 }
 
 float OneWireDS2438Fromula::userFunction29(float iTemp, float iVDD, float iVAD, float iVSens)
 {
-    return NAN;
+    return NO_NUM;
 }
 
 float OneWireDS2438Fromula::userFunction30(float iTemp, float iVDD, float iVAD, float iVSens)
 {
-    return NAN;
+    return NO_NUM;
 }

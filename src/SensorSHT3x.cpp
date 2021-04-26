@@ -65,7 +65,7 @@ float SensorSHT3x::measureValue(MeasureType iMeasureType)
     default:
         break;
     }
-    return NAN;
+    return NO_NUM;
 }
 
 bool SensorSHT3x::begin()
@@ -85,14 +85,14 @@ uint8_t SensorSHT3x::getI2cSpeed()
 float SensorSHT3x::readTemperature(void)
 {
     if (!getTempHum())
-        return NAN;
+        return NO_NUM;
     return mTemp;
 }
 
 float SensorSHT3x::readHumidity(void)
 {
     if (!getTempHum())
-        return NAN;
+        return NO_NUM;
     return mHumidity;
 }
 

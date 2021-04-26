@@ -55,15 +55,15 @@ class OneWireDS2438 : public OneWire
 
     bool mParasite;
     
-    float mTemp = NAN;
-    float mVDD = NAN;
-    float mVAD = NAN;
-    float mVSens = NAN;
+    float mTemp = NO_NUM;
+    float mVDD = NO_NUM;
+    float mVAD = NO_NUM;
+    float mVSens = NO_NUM;
 
-    float mTmpTemp = NAN;
-    float mTmpVDD = NAN;
-    float mTmpVAD = NAN;
-    float mTmpVSens = NAN;
+    float mTmpTemp = NO_NUM;
+    float mTmpVDD = NO_NUM;
+    float mTmpVAD = NO_NUM;
+    float mTmpVSens = NO_NUM;
 
     void init();
     void readScratchPad();

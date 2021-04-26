@@ -55,7 +55,7 @@ float SensorOPT300x::measureValue(MeasureType iMeasureType)
     default:
         break;
     }
-    return NAN;
+    return NO_NUM;
 }
 
 bool SensorOPT300x::begin()

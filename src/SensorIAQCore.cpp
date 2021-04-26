@@ -57,7 +57,7 @@ float SensorIAQCore::measureValue(MeasureType iMeasureType)
     default:
         break;
     }
-    return NAN;
+    return NO_NUM;
 }
 
 bool SensorIAQCore::begin()

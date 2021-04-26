@@ -25,8 +25,8 @@ class SensorIAQCore : public Sensor
     bool getSensorData();
 
   protected:
-    float mCo2 = NAN;
-    float mVoc = NAN;
+    float mCo2 = NO_NUM;
+    float mVoc = NO_NUM;
 
     uint8_t getSensorClass() override; // returns unique ID for this sensor type
     void sensorLoopInternal() override;

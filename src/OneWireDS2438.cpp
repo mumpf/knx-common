@@ -117,11 +117,11 @@ bool OneWireDS2438::getValue(float& eValue, uint8_t iModelFunction)
             if (lFunctionIndex >= 0 && lFunctionIndex <= FmlUser_End) {
                 eValue = (*OneWireDS2438Fromula::userFunction)(mTemp, mVDD, mVAD, mVSens);
             } else {
-                eValue = NAN;
+                eValue = NO_NUM;
             }
             break;
     }
-    return pValid && pMode == Connected && eValue != NAN;
+    return pValid && pMode == Connected && isNum(eValue);
 }
 
 bool OneWireDS2438::writeConfig(uint8_t config)
@@ -232,7 +232,7 @@ bool OneWireDS2438::updateVAD()
     lVoltRaw = (((int16_t)mScratchPad[CURR_MSB]) << 8) | mScratchPad[CURR_MSB];
     mTmpVSens = (double)lVoltRaw * 0.0002441;
 
-    lResult = mTmpVAD != NAN;
+    lResult = isNum(mTmpVAD);
     pValid = lResult;
     return lResult;
 }

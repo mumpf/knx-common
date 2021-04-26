@@ -24,8 +24,8 @@ class SensorSHT3x : public Sensor
     bool getTempHum();
     void writeCommand(uint16_t iCmd);
 
-    float mTemp = NAN;
-    float mHumidity = NAN;
+    float mTemp = NO_NUM;
+    float mHumidity = NO_NUM;
 
     uint8_t getSensorClass() override; // returns unique ID for this sensor type
     void sensorLoopInternal() override;

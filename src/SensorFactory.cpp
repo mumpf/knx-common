@@ -5,6 +5,7 @@
 #include "SensorBME280.h"
 #include "SensorBME680.h"
 #include "SensorSCD30.h"
+#include "SensorSCD40.h"
 #include "SensorIAQCore.h"
 #include "SensorSGP30.h"
 #include "SensorOPT300x.h"
@@ -28,6 +29,10 @@ Sensor* newSensor(uint8_t iSensorClass, MeasureType iMeasureType) {
 
         case SENS_SCD30:
             lSensor = new SensorSCD30(iMeasureType);
+            break;
+
+        case SENS_SCD41:
+            lSensor = new SensorSCD40(iMeasureType);
             break;
 
         case SENS_IAQCORE:

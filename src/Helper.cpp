@@ -34,3 +34,8 @@ bool delayCheck(uint32_t iOldTimer, uint32_t iDuration)
 {
     return millis() - iOldTimer >= iDuration;
 }
+
+// check if a float is a number (false if Not-a-number)
+bool isNum(float iNumber) {
+    return (iNumber + 10.0) > NO_NUM;
+}
