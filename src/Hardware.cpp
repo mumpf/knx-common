@@ -37,7 +37,7 @@ void savePower()
 void restorePower(){
     printDebug("restorePower: Switching on 5V rail...\n");
     // turn off 5V rail (CO2-Sensor & Buzzer)
-    uint8_t lBuffer[] = {U_INT_REG_WR_REQ_ACR0, ACR0_FLAG_DC2EN | ACR0_FLAG_XCLKEN | ACR0_FLAG_V20VCLIMIT};
+    uint8_t lBuffer[] = {U_INT_REG_WR_REQ_ACR0, ACR0_FLAG_DC2EN | ACR0_FLAG_V20VEN | ACR0_FLAG_XCLKEN | ACR0_FLAG_V20VCLIMIT};
     // get rid of knx reference
     Serial1.write(lBuffer, 2);
     // give all sensors some time to init
