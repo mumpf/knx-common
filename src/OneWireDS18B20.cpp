@@ -7,8 +7,8 @@
 
 // #define DebugInfoTemp
 
-OneWireDS18B20::OneWireDS18B20(OneWireDS2482* iBM, tIdRef iId)
-    : OneWire(iBM, iId)
+OneWireDS18B20::OneWireDS18B20(tIdRef iId)
+    : OneWire(iId)
 {}
 
 void OneWireDS18B20::loop() {
@@ -48,7 +48,8 @@ void OneWireDS18B20::init(bool iIsactive)
 
     if (!mParasite && readPowerSupply())
         mParasite = true;
-    mBitResolution = max(mBitResolution, resolution());
+    // mBitResolution = max(mBitResolution, resolution());
+    resolution(mBitResolution);
 }
 
 float OneWireDS18B20::getTemp()
@@ -61,6 +62,20 @@ bool OneWireDS18B20::getValue(float& eValue, uint8_t iModelFunction)
     // there is just one model function, so we ignore the parameter
     eValue = mTemp;
     return pValid && pMode == Connected;
+}
+
+bool OneWireDS18B20::setParameter(OneWire::ModelParameter iModelParameter, uint8_t iValue, uint8_t iModelFunction)
+{
+    bool lResult = true;
+    switch (iModelParameter)
+    {
+        case MeasureResolution:
+            mBitResolution = iModelFunction + 9;
+            break;
+        default:
+            break;
+    }
+    return lResult;
 }
 
 bool OneWireDS18B20::startConversionTemp()

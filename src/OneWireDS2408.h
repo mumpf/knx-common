@@ -70,7 +70,7 @@ class OneWireDS2408 : public OneWire
         Error
     };
 
-    OneWireDS2408(OneWireDS2482 *iBusMaster, tIdRef iId);
+    OneWireDS2408(tIdRef iId);
 
     void init();
     void loop() override;

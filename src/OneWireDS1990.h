@@ -7,7 +7,7 @@
 class OneWireDS1990 : public OneWire
 {
   public:
-    OneWireDS1990(OneWireDS2482 *iBusMaster, tIdRef iId);
+    OneWireDS1990(tIdRef iId);
 
     void loop() override;
 

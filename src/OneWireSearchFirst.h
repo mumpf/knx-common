@@ -15,5 +15,6 @@ class OneWireSearchFirst : public OneWireSearch
     bool wireSearchStep(uint8_t iStep) override;
     bool wireSearchEnd() override;
     bool wireSearchFinished(bool iIsError) override;
-    uint8_t wireSearchBlocking(tIdRef eAddress) override;
+    bool wireSearchBlocking() override;
+    bool wireSearchNewDevices() override;
 };

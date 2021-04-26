@@ -28,7 +28,7 @@
 class OneWireDS2438 : public OneWire
 {
   public:
-    OneWireDS2438(OneWireDS2482 *iBusMaster, tIdRef iId);
+    OneWireDS2438(tIdRef iId);
 
     void loop() override;
     bool getValue(float &eValue, uint8_t iModelFunction) override;

@@ -1,5 +1,6 @@
 #pragma once
 #include <Helper.h>
+#include <Hardware.h>
 
 /**
  * OneWire Commands
@@ -78,18 +79,21 @@ class OneWire {
     };
     typedef uint8_t ScratchPad[9];
 
-    OneWire(OneWireDS2482 *iBM, tIdRef iId);
+    OneWire(tIdRef iId);
     ~OneWire();
     // class members
+    static OneWire *factory(tIdRef iId, bool *eIsNew);
+
     // instance members
     virtual void loop() = 0;
     tIdRef Id() { return pId; }
     uint8_t Family() { return pId[0]; }
     SensorPriority Prio() { return pPrio; };
     SensorMode Mode();
+    void setBusmaster(OneWireDS2482 *iBM);
     void setModeConnected(bool iForce = false);
     void setModeDisconnected(bool iForce = false);
-    void incrementSearchCount();
+    void incrementSearchCount(bool iForce = false);
     void clearSearchCount();
     virtual bool getValue(float &eValue, uint8_t iModelFunction);
     virtual bool getValue(uint8_t &eValue, uint8_t iModelFunction);
@@ -97,10 +101,13 @@ class OneWire {
     virtual bool setParameter(ModelParameter iModelParameter, uint8_t iValue, uint8_t iModelFunction);
 
   protected:
+    static uint8_t sSensorCount;
+    static OneWire *sSensor[COUNT_1WIRE_CHANNEL];
+
     void wireSelectThisDevice();
 
     tId pId = { 0 };
-    OneWireDS2482 *pBM; //ref to BusMaster
+    OneWireDS2482 *pBM = NULL; //ref to BusMaster (might be NULL, is just set for first model function)
     uint32_t pDelay = 0;
     bool pValid = false; // is Value really valid?
 

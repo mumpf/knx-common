@@ -40,18 +40,21 @@ class OneWireSearch
     void newSearchForId(tIdRef iId);
     void manageSearchCounter(SearchState iState);
     SearchState state();
+    virtual bool wireSearchBlocking() = 0;
+    virtual bool wireSearchNewDevices() = 0;
 
   protected:
     OneWireDS2482 *mBM = NULL;
     uint32_t mDelay = 0;
     uint8_t gInstance = 255;
-
+    
 #ifdef DebugInfoSearch
     uint32_t mDuration = 0;
     uint32_t mDurationOld = 0;
     uint32_t mCurrDelay = 0;
     uint32_t mMaxDelay = 0;
 #endif
+    int searchDebug(const char *iFormat, ...);
 
     SearchState mSearchState = SearchNew;
     SearchMode mSearchMode = All;
@@ -73,5 +76,4 @@ class OneWireSearch
     virtual bool wireSearchStep(uint8_t iStep) = 0;
     virtual bool wireSearchEnd() = 0;
     virtual bool wireSearchFinished(bool iIsError) = 0;
-    virtual uint8_t wireSearchBlocking(tIdRef eAddress) = 0;
 };

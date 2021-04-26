@@ -5,8 +5,8 @@
 #include "OneWireDS2438.h"
 #include "OneWireDS2438Fromula.h"
 
-OneWireDS2438::OneWireDS2438(OneWireDS2482 *iBM, tIdRef iId)
-    : OneWire(iBM, iId){};
+OneWireDS2438::OneWireDS2438(tIdRef iId)
+    : OneWire(iId){};
 
 void OneWireDS2438::loop()
 {

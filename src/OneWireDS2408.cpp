@@ -4,7 +4,7 @@
 #include "OneWire.h"
 #include "OneWireDS2408.h"
 
-OneWireDS2408::OneWireDS2408(OneWireDS2482 *iBM, tIdRef iId) : OneWire(iBM, iId) {
+OneWireDS2408::OneWireDS2408(tIdRef iId) : OneWire(iId) {
     pPrio = PrioNormal;
 };
 

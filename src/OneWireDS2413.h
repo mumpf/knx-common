@@ -31,7 +31,7 @@ class OneWireDS2413 : public OneWire
         Error
     };
 
-    OneWireDS2413(OneWireDS2482 *iBusMaster, tIdRef iId);
+    OneWireDS2413(tIdRef iId);
 
     void init();
     void loop() override;

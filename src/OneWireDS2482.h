@@ -70,7 +70,7 @@ class OneWireDS2482
 
     OneWireDS2482(foundNewId iNewIdCallback, loopCallback iLoopCallback);
 
-    bool setup(uint8_t iInstanceId, uint8_t iI2cAddressOffset, bool iSearchNewDevices, bool iSearchIButtons);
+    bool setup(uint8_t iInstanceId, uint8_t iI2cAddressOffset, bool iSearchNewDevices);
     bool setupTiming(uint8_t itRSTL, uint8_t itMSP, uint8_t itW0L, uint8_t itREC0, uint8_t iRWPU);
     void loop();
 
@@ -106,6 +106,7 @@ class OneWireDS2482
     void wireSelect(const tIdRef iId);
     uint8_t wireSearch(uint8_t *eAddress);
     OneWire *CreateOneWire(tIdRef iId);
+    bool addSensor(OneWire *iSensor);
     void begin();
     uint8_t end();
     void writeByte(uint8_t);
@@ -114,10 +115,13 @@ class OneWireDS2482
     void adjustPort(uint8_t iData);
     uint8_t gInstance = 255; //just for debug 0-3
     uint8_t mI2cAddress = 0;
+    void searchLoopCallback();
 
   private:
     bool ProcessPriorityBusUse();
     bool ProcessNormalBusUse();
+    bool ProcessIButton();
+    void checkSensorTypesToProcess();
 
     OneWireSearch *mSearchPrio = NULL;
     OneWireSearch *mSearchNormal = NULL;
@@ -131,9 +135,9 @@ class OneWireDS2482
 
     OneWire *mSensor[30];
     uint8_t mDeviceCount = 0;
-    uint8_t mProcessNormalSensorIndex = 0;
-    uint8_t mProcessPrioSensorIndex = 0;
+    int8_t mProcessNormalSensorIndex = -1; // negative: do not process these sensor type, no sensor available
+    int8_t mProcessPrioSensorIndex = -1;   // negative: do not process these sensor type, no sensor available
+    int8_t mProcessIButtonIndex = -1;      // negative: do not process these sensor type, no sensor available
 
-    bool mSearchIButton = true;
     bool mSearchNewDevices = true;
 };

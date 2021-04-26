@@ -62,12 +62,16 @@ class OneWireDS18B20 : public OneWire
     };
 
   public:
-    OneWireDS18B20(OneWireDS2482 *iBusMaster, tIdRef iId);
+    OneWireDS18B20(tIdRef iId);
 
     void init( bool iIsActive );
 
     float getTemp();
     bool getValue(float &eValue, uint8_t iModelFunction) override;
+
+    bool setParameter(OneWire::ModelParameter iModelParameter, uint8_t iValue, uint8_t iModelFunction);
+
+    bool lResult = false;
 
     // attempt to determine if the device at the given address is connected to the bus
     bool isConnected();
@@ -87,7 +91,7 @@ class OneWireDS18B20 : public OneWire
     StateSensorTemp mState = Startup;
 
     bool mIsActive = false;
-    uint8_t mBitResolution;
+    uint8_t mBitResolution = 255;
     bool mParasite;
     float mTemp;
 

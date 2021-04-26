@@ -20,11 +20,9 @@ OneWireDS2482::OneWireDS2482(foundNewId iNewIdCallback, loopCallback iLoopCallba
     fNewIdCallback = iNewIdCallback;
     fLoopCallback = iLoopCallback;
     mError = 0;
-    mSearchPrio = new OneWireSearchFirst(this);
-    mSearchNormal = new OneWireSearchFirst(this);
 }
 
-bool OneWireDS2482::setup(uint8_t iInstanceId, uint8_t iI2cAddressOffset, bool iSearchNewDevices, bool iSearchIButtons)
+bool OneWireDS2482::setup(uint8_t iInstanceId, uint8_t iI2cAddressOffset, bool iSearchNewDevices)
 {
     mI2cAddress = I2C_1WIRE_DEVICE_ADDRESSS | iI2cAddressOffset;
     gInstance = iInstanceId;
@@ -33,17 +31,14 @@ bool OneWireDS2482::setup(uint8_t iInstanceId, uint8_t iI2cAddressOffset, bool i
         deviceReset();
         setActivePullup();
         // setStrongPullup();
-
-        mState = Init;
         mSearchNewDevices = iSearchNewDevices;
-        mSearchIButton = iSearchIButtons;
     }
     else
     {
-        mState = Error;
         mSearchNewDevices = false;
-        mSearchIButton = false;
     }
+    mState = Init;
+
     return (mState != Error);
 }
 
@@ -75,103 +70,74 @@ void OneWireDS2482::loop()
     switch (mState)
 	{
         case Init:
-            mSearchPrio->newSearchFamily(MODEL_DS1990);
-            mSearchNormal->newSearchAll();
+            // we check, which sensor types have to be processed
+            checkSensorTypesToProcess();
+
             // mSearchNormal->newSearchNoFamily(MODEL_DS1990);
-            mState = Startup;
+            mState = checkI2cPresence() ? Startup: Error;
             break;
         case Startup:
-			// at startup we do an initial search to find all supported sensors
-            switch (mSearchNormal->loop())
-            {
-                case OneWireSearchFirst::SearchFinished:
-                    mState = SearchIButton;
-                    mSearchNormal->newSearchNoFamily(MODEL_DS1990);
-                    break;
-                case OneWireSearchFirst::SearchError:
-                    mState = Error;
-                    break;
-                default:
-                    // do nothing, we stay in this state
-                    break;
+			// at startup or after Error Situations we reset all necessary objects
+            if (mProcessIButtonIndex >= 0) {
+                if (mSearchPrio == NULL)
+                    mSearchPrio = new OneWireSearchFirst(this);
+            }
+            if (mSearchNewDevices) {
+                if (mSearchNormal == NULL) 
+                    mSearchNormal = new OneWireSearchFirst(this);
             }
             mDelay = millis();
+            mState = SearchIButton;
             break;
 		case SearchIButton: {
-            if (mSearchIButton) {
-			switch (mSearchPrio->loop())
-                {
-                    case OneWireSearchFirst::SearchEnd:
-                        mState = ProcessIO;
-                        break;
-                    case OneWireSearchFirst::SearchFinished:
-                        mState = ProcessIO;
-                        break;
-                    case OneWireSearchFirst::SearchError:
-                        mState = Error;
-                        break;
-                    default:
-                        // do nothing, we stay in this state
-                        break;
-                }
-            } else {
+            if (mProcessIButtonIndex >= 0) {
+                ProcessIButton();
                 mState = ProcessIO;
             }
+            mState = ProcessIO;
             mDelay = millis();
             break;
         }
         case ProcessIO:
-            ProcessPriorityBusUse();
+            if (mProcessPrioSensorIndex >= 0) {
+                ProcessPriorityBusUse();
+            }
             mState = ProcessSensors;
             break;
         case ProcessSensors:
-            ProcessNormalBusUse();
+            if (mProcessNormalSensorIndex >= 0) {
+                ProcessNormalBusUse();
+            }
 			mState = SearchNewDevices;
             break;
         case SearchNewDevices:
             if (mSearchNewDevices) {
-                switch (mSearchNormal->loop())
-                {
-                    case OneWireSearchFirst::SearchEnd:
-                        mState = Idle;
-                        break;
-                    case OneWireSearchFirst::SearchFinished:
-                        mState = Idle;
-                        break;
-                    case OneWireSearchFirst::SearchError:
-                        mState = Error;
-                        break;
-                    default:
-                        // do nothing, we stay in this state
-                        break;
-                }
-            } else {
-                mState = Idle;
+                mSearchNormal->wireSearchNewDevices();
             }
+            mState = Idle;
             mDelay = millis();
             break;
         case Idle:
             mState = SearchIButton;
-            // mSearchNormal->newSearchAll();
-            // mSearchNormal->newSearchNoFamily(MODEL_DS1990);
-            // mSearchPrio->newSearchFamily(MODEL_DS1990);
             mDelay = millis();
             break;
         default:
             mState = Error;
             // as long as there is no Busmaster available, we stay in this state
-            if (checkI2cPresence()) {
-                // as long as there is a short, we stay in error state
-                bool lShortWire = readStatusShortDet();
-                if (lShortWire) {
-                    if (delayCheck(mDelay, 10)) {
+            if (delayCheck(mDelay, 10))
+            {
+                mDelay = millis();
+                if (checkI2cPresence())
+                {
+                    // as long as there is a short, we stay in error state
+                    bool lShortWire = readStatusShortDet();
+                    if (lShortWire)
+                    {
                         wireReset();
-                        mDelay = millis();
                     }
-                } else {
-                    // we wait a Moment and afterwards start over
-                    if (delayCheck(mDelay, 10)) {
-                        mState = SearchIButton;
+                    else
+                    {
+                        mState = Startup;
                         // reset all device counter
                         mSearchPrio->manageSearchCounter(OneWireSearch::SearchError);
                         mSearchNormal->manageSearchCounter(OneWireSearch::SearchError);
@@ -180,6 +146,57 @@ void OneWireDS2482::loop()
             }
             break;
 	}
+}
+
+// we check here all availble sensors for their priority
+void OneWireDS2482::checkSensorTypesToProcess() {
+    for (uint8_t lDeviceIndex = 0; lDeviceIndex < mDeviceCount; lDeviceIndex++)
+    {
+        OneWire *lSensor = mSensor[lDeviceIndex];
+        switch (lSensor->Family())
+        {
+            case MODEL_DS1990:
+                mProcessIButtonIndex = 0;
+                break;
+            case MODEL_DS2408:
+            case MODEL_DS2413:
+                mProcessPrioSensorIndex = 0;
+                break;
+            default:
+                mProcessNormalSensorIndex = 0;
+                break;
+        }
+    }
+}
+
+bool OneWireDS2482::ProcessIButton()
+{
+    bool lFound = false;
+    // iButtons are searched with high priority like IO sensors
+    // but have to be handled by a search algorithm
+    while (mProcessIButtonIndex < mDeviceCount && !lFound)
+    {
+        OneWire *lSensor = mSensor[mProcessIButtonIndex++];
+        if (lSensor->Family() == MODEL_DS1990)
+        {
+            mSearchPrio->newSearchForId(lSensor->Id());
+            lSensor->incrementSearchCount(true);
+            if (mSearchPrio->wireSearchBlocking())
+            {
+                // connected information is immediately used
+                lSensor->setModeConnected(true);
+            }
+            else
+            {
+                // disconnected information is using search count
+                lSensor->setModeDisconnected(true);
+            }
+            lFound = true;
+        }
+    }
+    if (mProcessIButtonIndex >= mDeviceCount)
+        mProcessIButtonIndex = 0;
+    return (mProcessIButtonIndex == 0);
 }
 
 // returns false while the method iterates thrugh sensor list, true if finished the list
@@ -222,49 +239,26 @@ bool OneWireDS2482::ProcessNormalBusUse()
 OneWire *OneWireDS2482::CreateOneWire(tIdRef iId) {
     OneWire *lSensor = NULL;
 
+    bool lIsNew = false;
+    lSensor = OneWire::factory(iId, &lIsNew);
     // check if Sensor exists
-	for (uint8_t i = 0; i < mDeviceCount; i++)
-	{
-		if (equalId(mSensor[i]->Id(), iId)) {
-            lSensor = mSensor[i];
-            lSensor->setModeConnected(); // happens only, if it is not in state New
-            break;
-        }
-	}
-	if (lSensor == NULL) {
-		// this is a new sensor
-		switch (iId[0]) 
-		{
-		case MODEL_DS18B20:
-        case MODEL_DS18S20:
-            lSensor = (new OneWireDS18B20(this, iId));
-            break;
-        case MODEL_DS1990:
-            lSensor = (new OneWireDS1990(this, iId));
-            break;
-        case MODEL_DS2408:
-            lSensor = (new OneWireDS2408(this, iId));
-            break;
-        case MODEL_DS2413:
-            lSensor = (new OneWireDS2413(this, iId));
-            break;
-        case MODEL_DS2438:
-            lSensor = (new OneWireDS2438(this, iId));
-            break;
-        default:
-            printHEX("Unsupported family found: ", iId, 7);
-            // sensor family not supported
-            break;
-        }
-		if (lSensor != NULL) {
-			if (fNewIdCallback != 0)
-				fNewIdCallback(lSensor);
-			mSensor[mDeviceCount++] = lSensor;
-			if (mDeviceCount == 30)
-				mDeviceCount--;
-        }
-	}
+    if (lIsNew) {
+        addSensor(lSensor);
+        if (fNewIdCallback != 0)
+            fNewIdCallback(lSensor);
+    } else {
+        lSensor->setModeConnected(); // happens only, if it is not in state New
+    }
     return lSensor;
+}
+
+bool OneWireDS2482::addSensor(OneWire* iSensor) {
+    if (mDeviceCount < 30) {
+        // add the sensor to the local sensor list
+        mSensor[mDeviceCount++] = iSensor;
+        // add this busmaster to sensor
+        iSensor->setBusmaster(this);
+    }
 }
 
 OneWire *OneWireDS2482::Sensor(uint8_t iIndex){
@@ -438,23 +432,26 @@ void OneWireDS2482::clearActivePullup()
   writeConfig(readConfig() | !DS2482_CONFIG_APU);
 }
 
+void OneWireDS2482::searchLoopCallback() {
+    if (fLoopCallback != 0)
+        fLoopCallback();
+}
+
 // Churn until the busy bit in the status register is clear
 uint8_t OneWireDS2482::waitOnBusy(bool iSetReadPointer)
 {
 	uint8_t status;
-
-	for(int i=1000; i>0; i--)
+    int i = 1000;
+    for(; i>0; i--)
 	{
         delayMicroseconds(20);
         status = readStatus(iSetReadPointer);
         if (!(status & DS2482_STATUS_BUSY))
 			break;
-        if (fLoopCallback != 0 && (i % 100) == 99) {
-            fLoopCallback();
-        }
+        // time dispatching is done in callback
+        searchLoopCallback();
 	}
-
-	// if we have reached this point and we are still busy, there is an error
+    // if we have reached this point and we are still busy, there is an error
 	if (status & DS2482_STATUS_BUSY)
 		mError = DS2482_ERROR_TIMEOUT;
 

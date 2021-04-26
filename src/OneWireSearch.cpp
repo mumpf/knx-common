@@ -1,9 +1,39 @@
 #include "OneWireSearch.h"
 #include "OneWireDS2482.h"
 
+// #ifdef ONEWIRE_TRACE_SEARCH
+// onewire debug output
+int OneWireSearch::searchDebug(const char* iFormat, ...)
+{
+    char lBuffer[256];
+    uint8_t lBufferPos = gInstance * 2;
+    memset(lBuffer, ' ', lBufferPos + 1);
+    switch (mSearchMode)
+    {
+        case Family:
+            lBuffer[lBufferPos] = 'F';
+            break;
+        case Id:
+            lBuffer[lBufferPos] = 'I';
+            break;
+        default:
+            lBuffer[lBufferPos] = 'A';
+            break;
+    }
+    sprintf(lBuffer + lBufferPos + 1, "%02i-", gInstance + 1);
+    va_list lArgs;
+    va_start(lArgs, iFormat);
+    int lResult = vsnprintf(lBuffer + lBufferPos + 4, 252 - lBufferPos, iFormat, lArgs);
+    va_end(lArgs);
+    SerialUSB.print(lBuffer);
+    return lResult;
+}
+// #endif
+
 OneWireSearch::OneWireSearch(OneWireDS2482* iBM)
 {
     mBM = iBM;
+    gInstance = iBM->gInstance;
     mSearchState = SearchNew;
 }
 
@@ -14,23 +44,55 @@ OneWireSearch::SearchState OneWireSearch::state()
 
 void OneWireSearch::newSearchAll()
 {
+    gInstance = mBM->gInstance;
     mSearchState = SearchNew;
     mSearchMode = All;
     mSearchFamily = 0;
+    mSearchLastDeviceFlag = 0;
+    mSearchLastDiscrepancy = -1;
+    mSearchLastFamilyDiscrepancy = 0;
+    for (uint8_t i = 0; i < 8; i++)
+        mSearchResultId[i] = 0;
+#if ONEWIRE_TRACE_SEARCH == detail
+    searchDebug("### Init search all ###\n");
+#endif
 }
 
 void OneWireSearch::newSearchFamily(uint8_t iFamily)
 {
+    gInstance = mBM->gInstance;
     mSearchState = SearchNew;
     mSearchMode = Family;
     mSearchFamily = iFamily;
+#if ONEWIRE_TRACE_SEARCH == detail
+    searchDebug("### Init search Family %02x ###\n", iFamily);
+#endif
 }
 
 void OneWireSearch::newSearchNoFamily(uint8_t iFamily)
 {
+    gInstance = mBM->gInstance;
     mSearchState = SearchNew;
     mSearchMode = NoFamily;
     mSearchFamily = iFamily;
+#if ONEWIRE_TRACE_SEARCH == detail
+    searchDebug("### Init search NoFamily %02x ###\n", iFamily);
+#endif
+}
+
+void OneWireSearch::newSearchForId(tIdRef iId)
+{
+    gInstance = mBM->gInstance;
+    mSearchState = SearchNew;
+    mSearchMode = Id;
+    mSearchFamily = iId[0];
+    mSearchLastDeviceFlag = 0;
+    mSearchLastDiscrepancy = 64;
+    mSearchLastFamilyDiscrepancy = 0;
+    copyId(mSearchResultId, iId);
+#if ONEWIRE_TRACE_SEARCH == detail
+    // searchDebug("### Init search for Id %02x %02x %02x %02x %02x %02x %02x ###\n", iId[0], iId[1], iId[2], iId[3], iId[4], iId[5], iId[6]);
+#endif
 }
 
 bool OneWireSearch::MatchSearchMode(uint8_t iFamily)
