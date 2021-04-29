@@ -24,12 +24,16 @@ void ledProg(bool iOn)
 
 void savePower()
 {
+    initUart();
+    printDebug("savePower: Stop UART KNX communication...\n");
+    sendUartCommand("STOP_MODE", U_STOP_MODE_REQ, U_STOP_MODE_IND);
     printDebug("savePower: Switching off 5V rail...\n");
     // turn off 5V rail (CO2-Sensor, Buzzer, RGB-LED-Driver, 1-Wire-Busmaster)
     uint8_t lBuffer[] = {U_INT_REG_WR_REQ_ACR0, ACR0_FLAG_XCLKEN | ACR0_FLAG_V20VCLIMIT };
     // get rid of knx reference
     Serial1.write(lBuffer, 2);
     // Turn off on-board leds
+    sendUartCommand("READ_ACR0 (Analog control register 0)", U_INT_REG_RD_REQ_ACR0, ACR0_FLAG_XCLKEN | ACR0_FLAG_V20VCLIMIT);
     ledProg(false);
     ledInfo(false);
 }
@@ -38,10 +42,12 @@ void restorePower(){
     printDebug("restorePower: Switching on 5V rail...\n");
     // turn off 5V rail (CO2-Sensor & Buzzer)
     uint8_t lBuffer[] = {U_INT_REG_WR_REQ_ACR0, ACR0_FLAG_DC2EN | ACR0_FLAG_V20VEN | ACR0_FLAG_XCLKEN | ACR0_FLAG_V20VCLIMIT};
-    // get rid of knx reference
+    initUart();
     Serial1.write(lBuffer, 2);
     // give all sensors some time to init
     delay(100);
+    printDebug("restorePower: Start UART KNX communication...\n");
+    sendUartCommand("EXIT_STOP_MODE", U_EXIT_STOP_MODE_REQ, U_RESET_IND);
 }
 
 void fatalError(uint8_t iErrorCode, const char* iErrorText) {
@@ -73,7 +79,7 @@ void fatalError(uint8_t iErrorCode, const char* iErrorText) {
 // it clears I2C Bus, calls Wire.begin() and checks which board hardware is available
 bool boardCheck()
 {
-    bool lResult = false;
+    bool lResult = checkUartExistence();
 
     // first we clear I2C-Bus
     Wire.end(); // in case, Wire.begin() was called before
@@ -137,35 +143,55 @@ bool boardCheck()
         boardHardware |= BOARD_HW_LED;
     printResult(lResult);
 #endif
+    // lResult = checkUartExistence();
+    return lResult;
+}
 
-    printDebug("Checking NCN5130 existence... ");
-    lResult = false;
+bool checkUartExistence()
+{
+    printDebug("Checking UART existence...\n");
+    bool lResult = false;
+    initUart();
     // send system state command and interpret answer
-    uint8_t cmd = U_SYSTEM_STATE;
-    // get rid of knx reference
-    // knx.platform().setupUart();
-    // knx.platform().writeUart(cmd);
-    Serial1.begin(19200, SERIAL_8E1);
-    while (!Serial1); 
-    Serial1.write(cmd);
-
-    uint32_t lUartResponseDelay = millis();
-    while (!delayCheck(lUartResponseDelay, 100))
-    {
-        // int resp = knx.platform().readUart();
-        int resp = Serial1.read();
-        if (resp == U_SYSTEM_STAT_IND) {
-            // resp = knx.platform().readUart();
-            resp = Serial1.read();
-            // "normal mode" answered
-            lResult = (resp & 3) == 3;
-            break;
-        }
-    }
+    uint8_t lResp = sendUartCommand("SYSTEM_STATE", U_SYSTEM_STATE, U_SYSTEM_STAT_IND, 1);
+    lResult = (lResp & 3) == 3;
     printResult(lResult);
     if (lResult)
         boardHardware |= BOARD_HW_NCN5130;
     return lResult;
+}
+
+bool initUart() {
+    Serial1.end();
+    Serial1.begin(19200, SERIAL_8E1);
+    for (uint16_t lCount = 0; !Serial1 && lCount < 1000; lCount++);
+    if (!Serial1) {
+        printDebug("initUart() falied, something is going completely wrong!");
+        return false;
+    }
+    return true;
+}
+
+uint8_t sendUartCommand(const char *iInfo, uint8_t iCmd, uint8_t iResp, uint8_t iLen /* = 0 */)
+{
+    printDebug("    Send command %s (%02X)... ", iInfo, iCmd);
+    // send system state command and interpret answer
+    Serial1.write(iCmd);
+
+    int lResp = 0;
+    uint32_t lUartResponseDelay = millis();
+    while (!delayCheck(lUartResponseDelay, 100))
+    {
+        lResp = Serial1.read();
+        if (lResp == iResp)
+        {
+            printDebug("OK - recieved expected response (%02X)\n", lResp);
+            if (iLen == 1)
+                lResp = Serial1.read();
+            break;
+        }
+    }
+    return lResp;
 }
 
 bool boardWithOneWire()

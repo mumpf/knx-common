@@ -147,7 +147,7 @@
 #define U_ACK_REQ            0x10 //-0x17
 #define U_CONFIGURE_REQ      0x18
 #define U_INT_REG_WR_REQ     0x28 //-0x2B
-#define U_INT_REG_RD_REQ     0x38
+#define U_INT_REG_RD_REQ     0x38 //-0x3B
 #define U_POLLING_STATE_REQ  0xE0
 
 // NCN5130: control services
@@ -173,11 +173,17 @@
 #define U_STOP_MODE_IND       0x2B
 #define U_SYSTEM_STAT_IND     0x4B
 
-// NCN5130 internal registers
-#define U_INT_REG_WR_REQ_WD        0x28
-#define U_INT_REG_WR_REQ_ACR0      0x29
-#define U_INT_REG_WR_REQ_ACR1      0x2A
-#define U_INT_REG_WR_REQ_ASR0      0x2B
+// NCN5130 write internal registers
+#define U_INT_REG_WR_REQ_WD 0x28
+#define U_INT_REG_WR_REQ_ACR0 0x29
+#define U_INT_REG_WR_REQ_ACR1 0x2A
+#define U_INT_REG_WR_REQ_ASR0 0x2B
+
+// NCN5130 read internal registers
+#define U_INT_REG_RD_REQ_WD   0x38
+#define U_INT_REG_RD_REQ_ACR0 0x39
+#define U_INT_REG_RD_REQ_ACR1 0x3A
+#define U_INT_REG_RD_REQ_ASR0 0x3B
 
 // NCN5130: Analog Control Register 0 - Bit values
 #define ACR0_FLAG_V20VEN           0x40
@@ -194,6 +200,10 @@
 // call this BEFORE Wire.begin()
 // it clears I2C Bus, calls Wire.begin() and checks which board hardware is available
 bool boardCheck();
+bool checkUartExistence();
+bool initUart();
+uint8_t sendUartCommand(const char* iInfo, uint8_t iCmd, uint8_t iResp, uint8_t iLen = 0);
+
 // just work after boardCheck
 bool boardWithOneWire();
 bool boardWithLed();
