@@ -150,89 +150,210 @@ void OneWireSearch::manageSearchCounter(OneWireSearch::SearchState iState) {
 }
 
 // async search, max blocking time 4 ms
-OneWireSearch::SearchState OneWireSearch::loop()
+// OneWireSearch::SearchState OneWireSearch::loop()
+// {
+//     uint8_t lStatus = 0;
+//     OneWireSearch::SearchState lExitState = mSearchState;
+// #ifdef DebugInfoSearch
+//     uint32_t lDuration = 0;
+//     mCurrDelay = millis();
+// #endif
+//     switch (mSearchState)
+//     {
+// 		case SearchNew:
+// #ifdef DebugInfoSearch
+// 			// DEBUG: Time measurement
+// 			mDuration = millis();
+//             mMaxDelay = 0;
+// #endif
+//             wireSearchNew();
+//             mSearchState = SearchNext;
+//             break;
+//         case SearchNext:
+//             wireSearchNext();
+//             mSearchState = SearchStart;
+//             mDelay = millis();
+//             break;
+//         case SearchStart:
+//             lStatus = mBM->readStatus();//(false);
+//             if (!(lStatus & DS2482_STATUS_BUSY))
+//             {
+//                 mSearchState = wireSearchStart(lStatus) ? SearchStep : SearchError;
+//                 mDelay = millis();
+//             }
+//             else if (delayCheck(mDelay, 1000))
+//             {
+//                 mSearchState = SearchError;
+//             }
+//             break;
+//         case SearchStep:
+//             if (wireSearchStep(mSearchStep))
+//             {
+//                 mSearchStep += 1;
+//                 // with family search we can stop as soon as an other family is found
+//                 if (mSearchMode == Family && mSearchFamily != mSearchResultId[0])
+//                     mSearchState = SearchFinished;
+//                 if (mSearchStep == 64)
+//                     mSearchState = SearchEnd;
+//             }
+//             else
+//             {
+//                 mSearchState = SearchError;
+//             };
+//             mDelay = millis();
+//             break;
+//         case SearchEnd:
+//             // we do CRC check first
+//             if (mSearchResultId[7] == mBM->crc8(mSearchResultId, 7)) {
+//                 if (MatchSearchMode(mSearchResultId[0])) mBM->CreateOneWire(mSearchResultId);
+//                 mSearchState = wireSearchEnd() ? SearchFinished : SearchNext;
+//             } else {
+//                 mSearchState = SearchError;
+//             }
+//             mDelay = millis();
+//             break;
+//         case SearchFinished:
+//             wireSearchFinished(false);
+//             mSearchState = SearchNew;
+// #ifdef DebugInfoSearch
+//             mMaxDelay = max(mMaxDelay, millis() - mCurrDelay);
+//             lDuration = millis() - mDuration;
+// 			if (abs(mDurationOld - lDuration) > 5) { 
+// 				// print only if there is a big difference between cycles
+//                 printDebug("(0x%X) Finished search %s (%s), took %d ms, max blocking was %d ms\n", mBM->mI2cAddress, mSearchMode == Family ? "Family" : "NoFamily", mSearchResultId, lDuration, mMaxDelay);
+//                 mDurationOld = lDuration;
+//             }
+// #endif
+//             break;
+//         default:
+//             wireSearchFinished(true);
+//             mSearchState = SearchNew;
+//             break;
+//     }
+// #ifdef DebugInfoSearch
+//     mMaxDelay = max(mMaxDelay, millis() - mCurrDelay);
+// #endif
+//     return lExitState;
+// }
+
+// blocking search, takes 91 ms per sensor!!!!
+// Perform a search of the 1-Wire bus
+bool OneWireSearch::wireSearchBlocking()
 {
-    uint8_t lStatus = 0;
-    OneWireSearch::SearchState lExitState = mSearchState;
-#ifdef DebugInfoSearch
-    uint32_t lDuration = 0;
-    mCurrDelay = millis();
+    uint8_t lDirection;
+    int8_t lLastZero = -1;
+    bool lResult = true;
+    uint8_t lCurrentByte = 0;
+
+#if ONEWIRE_TRACE_SEARCH == detail
+    // searchDebug("### start Blocking search ###\n");
 #endif
-    switch (mSearchState)
+    if (mSearchLastDeviceFlag)
+        lResult = false;
+
+    if (!mBM->wireReset())
+        lResult = false;
+
+    if (lResult)
     {
-		case SearchNew:
-#ifdef DebugInfoSearch
-			// DEBUG: Time measurement
-			mDuration = millis();
-            mMaxDelay = 0;
-#endif
-            wireSearchNew();
-            mSearchState = SearchNext;
-            break;
-        case SearchNext:
-            wireSearchNext();
-            mSearchState = SearchStart;
-            mDelay = millis();
-            break;
-        case SearchStart:
-            lStatus = mBM->readStatus();//(false);
-            if (!(lStatus & DS2482_STATUS_BUSY))
+        mBM->waitOnBusy();
+
+        mBM->wireWriteByte(WIRE_COMMAND_SEARCH);
+
+        mBM->waitOnBusy();
+        for (uint8_t i = 0; i < 64; i++)
+        {
+            int lSearchByte = i / 8;
+            int lSearchBit = 1 << i % 8;
+
+            if ((i % 4) == 0)
             {
-                mSearchState = wireSearchStart(lStatus) ? SearchStep : SearchError;
-                mDelay = millis();
+                // callback main routine each byte found
+                mBM->searchLoopCallback();
             }
-            else if (delayCheck(mDelay, 1000))
-            {
-                mSearchState = SearchError;
-            }
-            break;
-        case SearchStep:
-            if (wireSearchStep(mSearchStep))
-            {
-                mSearchStep += 1;
-                // with family search we can stop as soon as an other family is found
-                if (mSearchMode == Family && mSearchFamily != mSearchResultId[0])
-                    mSearchState = SearchFinished;
-                if (mSearchStep == 64)
-                    mSearchState = SearchEnd;
-            }
+            if (i < mSearchLastDiscrepancy)
+                lDirection = mSearchResultId[lSearchByte] & lSearchBit;
             else
+                lDirection = (i == mSearchLastDiscrepancy);
+
+            mBM->begin();
+            mBM->writeByte(DS2482_COMMAND_TRIPLET);
+            mBM->writeByte(lDirection ? 0x80 : 0x00);
+            mBM->end();
+
+            uint8_t lStatus = mBM->waitOnBusy(); //(false);
+            uint8_t lId = lStatus & DS2482_STATUS_SBR;
+            uint8_t lCompId = lStatus & DS2482_STATUS_TSB;
+            lDirection = lStatus & DS2482_STATUS_DIR;
+
+            if (lId && lCompId)
             {
-                mSearchState = SearchError;
-            };
-            mDelay = millis();
-            break;
-        case SearchEnd:
-            // we do CRC check first
-            if (mSearchResultId[7] == mBM->crc8(mSearchResultId, 7)) {
-                if (MatchSearchMode(mSearchResultId[0])) mBM->CreateOneWire(mSearchResultId);
-                mSearchState = wireSearchEnd() ? SearchFinished : SearchNext;
-            } else {
-                mSearchState = SearchError;
+                lResult = false;
+                break;
             }
-            mDelay = millis();
-            break;
-        case SearchFinished:
-            wireSearchFinished(false);
-            mSearchState = SearchNew;
-#ifdef DebugInfoSearch
-            mMaxDelay = max(mMaxDelay, millis() - mCurrDelay);
-            lDuration = millis() - mDuration;
-			if (abs(mDurationOld - lDuration) > 5) { 
-				// print only if there is a big difference between cycles
-                printDebug("(0x%X) Finished search %s (%s), took %d ms, max blocking was %d ms\n", mBM->mI2cAddress, mSearchMode == Family ? "Family" : "NoFamily", mSearchResultId, lDuration, mMaxDelay);
-                mDurationOld = lDuration;
+            else if (!lId && !lCompId && !lDirection)
+            {
+                lLastZero = i;
+                // check for Last discrepancy in family
+                if (lLastZero < 8)
+                    mSearchLastFamilyDiscrepancy = lLastZero;
             }
-#endif
-            break;
-        default:
-            wireSearchFinished(true);
-            mSearchState = SearchNew;
-            break;
+            lCurrentByte = mSearchResultId[lSearchByte];
+            if (lDirection)
+                lCurrentByte |= lSearchBit;
+            else
+                lCurrentByte &= ~lSearchBit;
+            // in case of search for Id we just compare if
+            // found bit is the same as the one in searched Id
+            if (mSearchMode == Id && lCurrentByte != mSearchResultId[lSearchByte] && lSearchByte < 7)
+            {
+                lResult = false;
+                break;
+            }
+            // in case of Family search, we can stop as soon as
+            // an other family is found
+            if (mSearchMode == Family && mSearchFamily != mSearchResultId[0])
+            {
+                lResult = false;
+                break;
+            }
+            mSearchResultId[lSearchByte] = lCurrentByte;
+        }
+        if (lResult)
+        {
+            mSearchLastDiscrepancy = lLastZero;
+            if (lLastZero == -1)
+                mSearchLastDeviceFlag = 1;
+            mBM->searchLoopCallback();
+            // found id is just valid if crc8 check is ok
+            if (mSearchResultId[7] != mBM->crc8(mSearchResultId, 7))
+                lResult = false;
+            // for (uint8_t i = 0; i < 7; i++)
+            // 	eAddress[i] = mSearchResultId[i];
+        }
     }
-#ifdef DebugInfoSearch
-    mMaxDelay = max(mMaxDelay, millis() - mCurrDelay);
+#if ONEWIRE_TRACE_SEARCH == detail
+    // searchDebug("### End blocking search after %ld ms\n", millis() - lDelay);
 #endif
-    return lExitState;
+    return lResult;
 }
 
+bool OneWireSearch::wireSearchNewDevices()
+{
+    if (wireSearchBlocking())
+    {
+        // found a device
+        if (MatchSearchMode(mSearchResultId[0]))
+            mBM->CreateOneWire(mSearchResultId);
+        if (mSearchLastDeviceFlag)
+        {
+            newSearchAll();
+        }
+    }
+    else
+    {
+        // if there was an error, we start over
+        newSearchAll();
+    }
+    return true;
+}

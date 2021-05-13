@@ -23,7 +23,7 @@ void SensorSCD40::sensorLoopInternal()
             Sensor::sensorLoopInternal();
             break;
         case Finalize:
-            // we ask for distance until we get a valid value
+            // we ask for value until we get a valid value
             if (delayCheck(pSensorStateDelay, 2000))
             {
                 if (getSensorData())

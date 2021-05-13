@@ -33,15 +33,15 @@ class OneWireSearch
 
     OneWireSearch(OneWireDS2482 *iBM);
 
-    SearchState loop();
+    // SearchState loop();
     void newSearchAll();
     void newSearchFamily(uint8_t iFamily);
     void newSearchNoFamily(uint8_t iNoFamily);
     void newSearchForId(tIdRef iId);
     void manageSearchCounter(SearchState iState);
     SearchState state();
-    virtual bool wireSearchBlocking() = 0;
-    virtual bool wireSearchNewDevices() = 0;
+    virtual bool wireSearchBlocking();
+    virtual bool wireSearchNewDevices();
 
   protected:
     OneWireDS2482 *mBM = NULL;
@@ -70,10 +70,10 @@ class OneWireSearch
     uint8_t mSearchFamily = 0;
 
     bool MatchSearchMode(uint8_t iFamily);
-    virtual void wireSearchNew() = 0;
-    virtual void wireSearchNext() = 0;
-    virtual bool wireSearchStart(uint8_t iStatus) = 0;
-    virtual bool wireSearchStep(uint8_t iStep) = 0;
-    virtual bool wireSearchEnd() = 0;
-    virtual bool wireSearchFinished(bool iIsError) = 0;
+    // virtual void wireSearchNew() = 0;
+    // virtual void wireSearchNext() = 0;
+    // virtual bool wireSearchStart(uint8_t iStatus) = 0;
+    // virtual bool wireSearchStep(uint8_t iStep) = 0;
+    // virtual bool wireSearchEnd() = 0;
+    // virtual bool wireSearchFinished(bool iIsError) = 0;
 };

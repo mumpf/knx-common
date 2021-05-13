@@ -1,7 +1,7 @@
 #pragma once
 #include <inttypes.h>
 #include "OneWire.h"
-#include "OneWireSearchFirst.h"
+#include "OneWireSearch.h"
 
 // Chose between a table based CRC (flash expensive, fast)
 // or a computed CRC (smaller, slow)

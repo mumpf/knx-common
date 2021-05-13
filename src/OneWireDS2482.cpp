@@ -80,11 +80,11 @@ void OneWireDS2482::loop()
 			// at startup or after Error Situations we reset all necessary objects
             if (mProcessIButtonIndex >= 0) {
                 if (mSearchPrio == NULL)
-                    mSearchPrio = new OneWireSearchFirst(this);
+                    mSearchPrio = new OneWireSearch(this);
             }
             if (mSearchNewDevices) {
                 if (mSearchNormal == NULL) 
-                    mSearchNormal = new OneWireSearchFirst(this);
+                    mSearchNormal = new OneWireSearch(this);
             }
             mDelay = millis();
             mState = SearchIButton;
