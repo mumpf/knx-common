@@ -5,7 +5,7 @@
 #include <stdarg.h>
 #include <Arduino.h>
 
-#define NO_NUM -987654321.0F; // normal NAN-Handling does not work
+#define NO_NUM -987654321.0F // normal NAN-Handling does not work
 
 /*********************
  * Helper for any module

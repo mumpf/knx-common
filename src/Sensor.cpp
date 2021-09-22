@@ -161,6 +161,8 @@ bool Sensor::measureValue(MeasureType iMeasureType, float& eValue) {
             if (lResult)
                 lResult = sSensors[lCounter]->gSensorState == Running;
             if (lResult) eValue = sSensors[lCounter]->measureValue(iMeasureType);
+            if (lResult)
+                lResult = (eValue > NO_NUM);
             break;
         }
     }

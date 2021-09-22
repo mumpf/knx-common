@@ -20,6 +20,8 @@ void SensorSCD40::sensorLoopInternal()
             Sensor::sensorLoopInternal();
             break;
         case Calibrate:
+            
+            startLowPowerPeriodicMeasurement();
             Sensor::sensorLoopInternal();
             break;
         case Finalize:
@@ -32,7 +34,7 @@ void SensorSCD40::sensorLoopInternal()
             }
             break;
         case Running:
-            if (delayCheck(pSensorStateDelay, 2000))
+            if (delayCheck(pSensorStateDelay, 35000))
             {
                 getSensorData();
                 pSensorStateDelay = millis();
@@ -68,12 +70,11 @@ bool SensorSCD40::begin()
     printDebug("Starting sensor SCD40... ");
     SensirionI2CScd4x::begin(Wire);
     bool lResult = false;
-    lResult = (startPeriodicMeasurement() == 0);
-    // lResult = startLowPowerPeriodicMeasurement();
+    lResult = (stopPeriodicMeasurement() == 0);
     if (lResult)
-    {
+        lResult = (setTemperatureOffset(-mTempOffset) == 0);
+    if (lResult)
         lResult = Sensor::begin();
-    }
     printResult(lResult);
     return lResult;
 }
@@ -94,7 +95,7 @@ bool SensorSCD40::getSensorData()
             uint16_t lTemp;
             uint16_t lHum;
             uint16_t lCo2;
-            lResult = (SensirionI2CScd4x::readMeasurement(lTemp, lHum, lCo2) == 0);
+            lResult = (SensirionI2CScd4x::readMeasurementTicks(lCo2, lTemp, lHum) == 0);
             lResult = (lCo2 > 0);
             if (lResult) {
                 mTemp = lTemp * 175.0 / 65536.0 - 45.0;
@@ -106,3 +107,6 @@ bool SensorSCD40::getSensorData()
     return lResult;
 }
 
+void SensorSCD40::prepareTemperatureOffset(float iTemp) {
+    mTempOffset = -4.0 + iTemp;
+}
