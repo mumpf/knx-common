@@ -135,7 +135,7 @@ float SensorBME680::measureValue(MeasureType iMeasureType) {
         default:
             break;
     }
-    return -1000.0f;
+    return NO_NUM;
 }
 
 bool SensorBME680::begin() {
