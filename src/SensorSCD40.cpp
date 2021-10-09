@@ -72,7 +72,7 @@ bool SensorSCD40::begin()
     bool lResult = false;
     lResult = (stopPeriodicMeasurement() == 0);
     if (lResult)
-        lResult = (setTemperatureOffset(-mTempOffset) == 0);
+        lResult = (setTemperatureOffset(-gTempOffset) == 0);
     if (lResult)
         lResult = Sensor::begin();
     printResult(lResult);
@@ -107,6 +107,7 @@ bool SensorSCD40::getSensorData()
     return lResult;
 }
 
-void SensorSCD40::prepareTemperatureOffset(float iTemp) {
-    mTempOffset = -4.0 + iTemp;
+bool SensorSCD40::prepareTemperatureOffset(float iTempOffset) {
+    gTempOffset = -4.0 + iTempOffset;
+    return true;
 }

@@ -17,7 +17,7 @@ float SensorSCD30::measureValue(MeasureType iMeasureType)
     {
     case Temperature:
         // hardware calibration
-        return getTemperature() - 3.0f;
+        return getTemperature();
         break;
     case Humidity:
         return getHumidity();
@@ -28,13 +28,17 @@ float SensorSCD30::measureValue(MeasureType iMeasureType)
     default:
         break;
     }
-    return -1000.0f;
+    return NO_NUM;
 }
 
 bool SensorSCD30::begin() {
     printDebug("Starting sensor SCD30... ");
     bool lResult = SCD30::begin();
-    if (lResult) lResult = Sensor::begin();
+    if (lResult) 
+    {
+        lResult = Sensor::begin();
+        setTemperatureOffset(-gTempOffset);
+    }
     printResult(lResult);
     return lResult;
 }
@@ -61,3 +65,8 @@ void SensorSCD30::sensorLoopInternal() {
     }
 }
 
+bool SensorSCD30::prepareTemperatureOffset(float iTemp)
+{
+    gTempOffset = iTemp;
+    return true;
+}

@@ -11,7 +11,6 @@ class SensorSCD40 : public Sensor, protected SensirionI2CScd4x
     float mHum = NO_NUM;
     float mCo2 = NO_NUM;
     bool getSensorData();
-    float mTempOffset = -4.0; // this is the default value of SCD4x
 
   protected:
     uint8_t getSensorClass() override; // returns unique ID for this sensor type
@@ -25,5 +24,5 @@ class SensorSCD40 : public Sensor, protected SensirionI2CScd4x
     
     bool begin() override;
     uint8_t getI2cSpeed() override;
-    void prepareTemperatureOffset(float iTemp);
+    bool prepareTemperatureOffset(float iTempOffset) override;
 };

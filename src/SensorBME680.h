@@ -31,6 +31,7 @@ protected:
     uint8_t getI2cSpeed() override;
     void delayCallback(bme680_delay_fptr_t iDelayCallback);
     void setMagicKeyOffset(uint8_t iMagicKeyOffset);
+    bool prepareTemperatureOffset(float iTemp) override;
 
   private:
     static uint8_t sMagicWord[];

@@ -17,7 +17,7 @@ float SensorSCD30::measureValue(MeasureType iMeasureType)
     {
     case Temperature:
         // hardware calibration
-        return mTemp - 3.0f;
+        return mTemp;
         break;
     case Humidity:
         return mHum;

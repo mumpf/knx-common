@@ -14,11 +14,12 @@ protected:
     bool initWakeup();
     bool initFinalize();
 
-public:
+  public:
     SensorBME280(uint16_t iMeasureTypes);
     SensorBME280(uint16_t iMeasureTypes, uint8_t iAddress);
     virtual ~SensorBME280() {}
 
     bool begin() override;
     uint8_t getI2cSpeed() override;
+    bool prepareTemperatureOffset(float iTemp) override;
 };

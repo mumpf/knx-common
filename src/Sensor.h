@@ -63,6 +63,7 @@ class Sensor
     uint8_t gAddress; 
     SensorState gSensorState = Wakeup;
     uint32_t pSensorStateDelay = 0;
+    float gTempOffset = 0.0;
 
     virtual uint8_t getSensorClass() = 0; // pure; returns unique ID for this sensor type
     bool checkSensorConnection();
@@ -85,5 +86,5 @@ class Sensor
     static uint8_t getMaxI2cSpeed();
    
     virtual uint8_t getI2cSpeed();
-
+    virtual bool prepareTemperatureOffset(float iTempOffset);
 };

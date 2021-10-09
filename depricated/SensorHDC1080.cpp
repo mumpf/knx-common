@@ -8,7 +8,7 @@ float SensorHDC1080::measureValue(MeasureType iMeasureType) {
     {
     case Temperature:
         // hardware calibration
-        return readTemperature() - 2.0f;
+        return readTemperature();
         break;
     case Humidity:
         return readHumidity();

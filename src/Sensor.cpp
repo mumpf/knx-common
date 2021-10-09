@@ -141,6 +141,11 @@ uint8_t Sensor::getI2cSpeed() {
     return 1;  // n * 100kHz
 }
 
+bool Sensor::prepareTemperatureOffset(float iTemp)
+{
+    return false;
+}
+
 // should be overridden, if there is a state to save before power failure
 void Sensor::sensorSaveState() {};
 

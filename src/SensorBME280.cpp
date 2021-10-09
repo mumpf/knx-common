@@ -63,6 +63,7 @@ bool SensorBME280::initWakeup()
 bool SensorBME280::initFinalize() {
     readCoefficients(); // read trimming parameters, see DS 4.2.2
     setSampling(); // use defaults
+    setTemperatureCompensation(gTempOffset);
     return true;
 }
 
@@ -71,7 +72,7 @@ float SensorBME280::measureValue(MeasureType iMeasureType) {
     {
     case Temperature:
         // hardware calibration
-        return readTemperature() - 2.0f;
+        return readTemperature();
         break;
     case Humidity:
         return readHumidity();
@@ -97,4 +98,10 @@ bool SensorBME280::begin() {
 uint8_t SensorBME280::getI2cSpeed()
 {
     return 4; // n * 100kHz
+}
+
+bool SensorBME280::prepareTemperatureOffset(float iTemp)
+{
+    gTempOffset = iTemp;
+    return true;
 }

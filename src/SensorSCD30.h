@@ -18,4 +18,5 @@ public:
 
     bool begin() override; 
     void sensorLoopInternal() override;
+    bool prepareTemperatureOffset(float iTemp) override;
 };

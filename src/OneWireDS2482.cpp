@@ -258,7 +258,9 @@ bool OneWireDS2482::addSensor(OneWire* iSensor) {
         mSensor[mDeviceCount++] = iSensor;
         // add this busmaster to sensor
         iSensor->setBusmaster(this);
+        return true;
     }
+    return false;
 }
 
 OneWire *OneWireDS2482::Sensor(uint8_t iIndex){

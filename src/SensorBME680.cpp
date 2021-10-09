@@ -115,7 +115,7 @@ float SensorBME680::measureValue(MeasureType iMeasureType) {
     {
         case Temperature:
             // hardware calibration
-            return Bsec::temperature - 3.5f;
+            return Bsec::temperature;
             break;
         case Humidity:
             return Bsec::humidity;
@@ -153,6 +153,7 @@ bool SensorBME680::begin() {
         Bsec::updateSubscription(sensorList, sizeof(sensorList)/sizeof(bsec_virtual_sensor_t), BSEC_SAMPLE_RATE_LP);
         lResult = checkIaqSensorStatus();
     }
+    // Bsec::setTemperatureOffset(-gTempOffset);
     return lResult;
 }
 
@@ -250,4 +251,10 @@ void SensorBME680::sensorUpdateState(void)
         stateUpdateTimer = millis();
     }
     mLastAccuracy = Bsec::iaqAccuracy;
+}
+
+bool SensorBME680::prepareTemperatureOffset(float iTemp)
+{
+    gTempOffset = iTemp;
+    return false;
 }
