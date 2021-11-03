@@ -1,3 +1,4 @@
+#ifdef SENSORMODULE
 #include <Arduino.h>
 #include <Wire.h>
 #include "Sensor.h"
@@ -185,3 +186,4 @@ uint8_t Sensor::getError() {
     // }
     return lResult;
 }
+#endif

@@ -1,4 +1,5 @@
 #pragma once
+#ifdef COUNT_1WIRE_CHANNEL
 
 #include "OneWireDS2438.h"
 
@@ -62,3 +63,4 @@ class OneWireDS2438Fromula
     static float userFunction29(float iTemp, float iVDD, float iVAD, float iVSens);
     static float userFunction30(float iTemp, float iVDD, float iVAD, float iVSens);
 };
+#endif

@@ -1,4 +1,5 @@
 #pragma once
+#ifdef SENSORMODULE
 #include <SparkFun_SCD30_Arduino_Library.h>
 #include "Sensor.h"
 
@@ -20,3 +21,4 @@ public:
     void sensorLoopInternal() override;
     bool prepareTemperatureOffset(float iTemp) override;
 };
+#endif

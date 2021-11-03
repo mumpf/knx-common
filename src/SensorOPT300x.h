@@ -1,4 +1,5 @@
 #pragma once
+#ifdef SENSORMODULE
 #include "Sensor.h"
 
 #define OPT300X_I2C_ADDR 0x45
@@ -63,3 +64,4 @@ class SensorOPT300x : public Sensor
     bool begin() override;
     uint8_t getI2cSpeed() override;
 };
+#endif

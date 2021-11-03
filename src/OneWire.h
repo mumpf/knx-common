@@ -1,4 +1,5 @@
 #pragma once
+#ifdef COUNT_1WIRE_CHANNEL
 #include <Helper.h>
 #include <Hardware.h>
 
@@ -119,3 +120,4 @@ class OneWire {
     SensorPriority pPrio = PrioLow;
     uint8_t pSearchCount = 0;
 };
+#endif

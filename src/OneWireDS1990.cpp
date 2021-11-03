@@ -1,3 +1,4 @@
+#ifdef COUNT_1WIRE_CHANNEL
 #include <arduino.h>
 #include <stdio.h>
 #include <Wire.h>
@@ -17,3 +18,4 @@ bool OneWireDS1990::getValue(uint8_t &eValue, uint8_t iModelFunction) {
     eValue = (pMode == Connected);
     return true;
 }
+#endif

@@ -1,4 +1,5 @@
 #pragma once
+#ifdef SENSORMODULE
 #include "Sensor.h"
 
 // dummy sensor, returned for not implemented sensors
@@ -17,3 +18,4 @@ class SensorDummy : public Sensor
     bool begin() override;
     uint8_t getI2cSpeed() override;
 };
+#endif

@@ -1,3 +1,4 @@
+#ifdef SENSORMODULE
 #include "SensorBME280.h"
 
 SensorBME280::SensorBME280(uint16_t iMeasureTypes)
@@ -105,3 +106,4 @@ bool SensorBME280::prepareTemperatureOffset(float iTemp)
     gTempOffset = iTemp;
     return true;
 }
+#endif

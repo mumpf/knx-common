@@ -1,4 +1,5 @@
 #pragma once
+#ifdef SENSORMODULE
 #include <Adafruit_BME280.h>
 #include "Sensor.h"
 
@@ -23,3 +24,4 @@ protected:
     uint8_t getI2cSpeed() override;
     bool prepareTemperatureOffset(float iTemp) override;
 };
+#endif

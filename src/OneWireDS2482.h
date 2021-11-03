@@ -1,4 +1,5 @@
 #pragma once
+#ifdef COUNT_1WIRE_CHANNEL
 #include <inttypes.h>
 #include "OneWire.h"
 #include "OneWireSearch.h"
@@ -141,3 +142,4 @@ class OneWireDS2482
 
     bool mSearchNewDevices = true;
 };
+#endif

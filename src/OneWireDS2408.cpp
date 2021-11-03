@@ -1,3 +1,4 @@
+#ifdef COUNT_1WIRE_CHANNEL
 #include <arduino.h>
 #include <stdio.h>
 #include <Wire.h>
@@ -235,3 +236,4 @@ bool OneWireDS2408::resetActivity()
     pBM->wireWriteByte(DS2408_RESET_CMD);
     return (pBM->wireReadByte() == 0xAA);
 }
+#endif

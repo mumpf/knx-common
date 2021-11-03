@@ -1,3 +1,4 @@
+#ifdef COUNT_1WIRE_CHANNEL
 #include "OneWire.h"
 #include "OneWireDS2482.h"
 #include "OneWireDS18B20.h"
@@ -151,3 +152,4 @@ bool OneWire::setParameter(OneWire::ModelParameter iModelParameter, uint8_t iVal
     // default implementation for devices without parameters
     return false;
 }
+#endif

@@ -1,4 +1,5 @@
 #pragma once
+#ifdef SENSORMODULE
 #include "Sensor.h"
 #include <VL53L1X.h>
 
@@ -23,3 +24,4 @@ class SensorVL53L1X : public Sensor, protected VL53L1X
     bool begin() override;
     uint8_t getI2cSpeed() override;
 };
+#endif

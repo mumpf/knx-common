@@ -1,4 +1,5 @@
 #pragma once
+#ifdef COUNT_1WIRE_CHANNEL
 
 #include <inttypes.h>
 #include "OneWire.h"
@@ -75,3 +76,4 @@ class OneWireDS2438 : public OneWire
     bool updateVDD();
     bool updateVAD();
 };
+#endif

@@ -1,4 +1,5 @@
 #pragma once
+#ifdef COUNT_1WIRE_CHANNEL
 
 #include <inttypes.h>
 #include "OneWire.h"
@@ -15,3 +16,4 @@ class OneWireDS1990 : public OneWire
 
   private:
 };
+#endif

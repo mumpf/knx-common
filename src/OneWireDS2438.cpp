@@ -1,3 +1,4 @@
+#ifdef COUNT_1WIRE_CHANNEL
 #include <arduino.h>
 #include <stdio.h>
 #include <Wire.h>
@@ -256,3 +257,4 @@ void OneWireDS2438::readScratchPad()
     mScratchPad[CURR_MSB] = pBM->wireReadByte();
     mScratchPad[THRESH] = pBM->wireReadByte();
 }
+#endif

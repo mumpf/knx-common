@@ -6,6 +6,7 @@
 */
 
 #pragma once
+#ifdef COUNT_1WIRE_CHANNEL
 
 #include <inttypes.h>
 #include "OneWire.h"
@@ -105,3 +106,4 @@ class OneWireDS18B20 : public OneWire
     // read device's power requirements
     bool readPowerSupply();
 };
+#endif

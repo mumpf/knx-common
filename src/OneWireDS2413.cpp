@@ -1,3 +1,4 @@
+#ifdef COUNT_1WIRE_CHANNEL
 #include <arduino.h>
 #include <stdio.h>
 #include <Wire.h>
@@ -177,3 +178,4 @@ bool OneWireDS2413::setParameter(OneWire::ModelParameter iModelParameter, uint8_
     }
     return lResult;
 }
+#endif

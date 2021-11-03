@@ -1,3 +1,4 @@
+#ifdef SENSORMODULE
 #include "Sensor.h"
 #include "Hardware.h"
 #include "SensorDummy.h"
@@ -63,3 +64,4 @@ Sensor* newSensor(uint8_t iSensorClass, MeasureType iMeasureType) {
     }
     return lSensor;
 }
+#endif

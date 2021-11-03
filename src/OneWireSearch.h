@@ -1,4 +1,5 @@
 #pragma once
+#ifdef COUNT_1WIRE_CHANNEL
 #include <inttypes.h>
 #include <Arduino.h>
 #include "OneWire.h"
@@ -77,3 +78,4 @@ class OneWireSearch
     // virtual bool wireSearchEnd() = 0;
     // virtual bool wireSearchFinished(bool iIsError) = 0;
 };
+#endif

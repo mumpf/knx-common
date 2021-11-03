@@ -1,3 +1,4 @@
+#ifdef COUNT_1WIRE_CHANNEL
 #include <Wire.h>
 #include <Arduino.h>
 #include "Helper.h"
@@ -657,3 +658,4 @@ uint8_t OneWireDS2482::crc8(const uint8_t *addr, uint8_t len)
 }
 #endif
 
+#endif

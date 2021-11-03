@@ -1,3 +1,4 @@
+#ifdef SENSORMODULE
 #include <Wire.h>
 #include "SensorIAQCore.h"
 
@@ -90,3 +91,4 @@ bool SensorIAQCore::getSensorData()
     }
     return false;
 }
+#endif

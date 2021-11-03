@@ -1,5 +1,6 @@
 #pragma once
 // #include <knx/bits.h>
+#ifdef SENSORMODULE
 #include "Helper.h"
 
 #define SENSOR_COUNT 5
@@ -88,3 +89,4 @@ class Sensor
     virtual uint8_t getI2cSpeed();
     virtual bool prepareTemperatureOffset(float iTempOffset);
 };
+#endif

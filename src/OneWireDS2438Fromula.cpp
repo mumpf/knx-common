@@ -1,3 +1,5 @@
+#ifdef COUNT_1WIRE_CHANNEL
+
 #include "OneWireDS2438Fromula.h"
 
 OneWireDS2438Fromula::OneWireDS2438Fromula(/* args */)
@@ -213,3 +215,4 @@ float OneWireDS2438Fromula::userFunction30(float iTemp, float iVDD, float iVAD, 
 {
     return NO_NUM;
 }
+#endif

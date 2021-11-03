@@ -1,3 +1,4 @@
+#ifdef SENSORMODULE
 #include <Wire.h>
 #include "SensorSCD40.h"
 
@@ -111,3 +112,4 @@ bool SensorSCD40::prepareTemperatureOffset(float iTempOffset) {
     gTempOffset = -4.0 + iTempOffset;
     return true;
 }
+#endif

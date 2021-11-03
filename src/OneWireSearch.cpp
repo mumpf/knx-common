@@ -1,3 +1,4 @@
+#ifdef COUNT_1WIRE_CHANNEL
 #include "OneWireSearch.h"
 #include "OneWireDS2482.h"
 
@@ -357,3 +358,4 @@ bool OneWireSearch::wireSearchNewDevices()
     }
     return true;
 }
+#endif

@@ -1,3 +1,4 @@
+#ifdef SENSORMODULE
 #include "SensorSCD30.h"
 
 SensorSCD30::SensorSCD30(uint16_t iMeasureTypes)
@@ -70,3 +71,4 @@ bool SensorSCD30::prepareTemperatureOffset(float iTemp)
     gTempOffset = iTemp;
     return true;
 }
+#endif

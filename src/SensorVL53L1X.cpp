@@ -1,3 +1,4 @@
+#ifdef SENSORMODULE
 #include <Wire.h>
 #include "SensorVL53L1X.h"
 
@@ -100,3 +101,4 @@ bool SensorVL53L1X::getSensorData()
     return lResult;
 }
 
+#endif

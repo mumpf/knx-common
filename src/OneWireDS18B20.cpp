@@ -1,3 +1,4 @@
+#ifdef COUNT_1WIRE_CHANNEL
 #include <Wire.h>
 #include <arduino.h>
 #include <math.h>
@@ -210,3 +211,4 @@ void OneWireDS18B20::readScratchPad()
     }
     pBM->wireReset();
 }
+#endif

@@ -1,4 +1,5 @@
 #pragma once
+#ifdef COUNT_1WIRE_CHANNEL
 
 #include <inttypes.h>
 #include "OneWire.h"
@@ -51,3 +52,4 @@ class OneWireDS2413 : public OneWire
     uint8_t mIoMask = 0; // no input, just ouput
     uint8_t mIoInvertMask = 0; // no invert
 };
+#endif
