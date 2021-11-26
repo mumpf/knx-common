@@ -1,7 +1,7 @@
 #pragma once
-#ifdef COUNT_1WIRE_CHANNEL
 #include <inttypes.h>
 #include "OneWire.h"
+#ifdef COUNT_1WIRE_CHANNEL
 #include "OneWireSearch.h"
 
 // Chose between a table based CRC (flash expensive, fast)

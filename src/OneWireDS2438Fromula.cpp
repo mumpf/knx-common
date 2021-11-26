@@ -1,6 +1,6 @@
-#ifdef COUNT_1WIRE_CHANNEL
 
 #include "OneWireDS2438Fromula.h"
+#ifdef COUNT_1WIRE_CHANNEL
 
 OneWireDS2438Fromula::OneWireDS2438Fromula(/* args */)
 {

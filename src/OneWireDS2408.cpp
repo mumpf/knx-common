@@ -1,8 +1,8 @@
-#ifdef COUNT_1WIRE_CHANNEL
 #include <arduino.h>
 #include <stdio.h>
 #include <Wire.h>
 #include "OneWire.h"
+#ifdef COUNT_1WIRE_CHANNEL
 #include "OneWireDS2408.h"
 
 OneWireDS2408::OneWireDS2408(tIdRef iId) : OneWire(iId) {

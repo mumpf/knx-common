@@ -1,7 +1,7 @@
 #pragma once
-#ifdef COUNT_1WIRE_CHANNEL
 
 #include "OneWireDS2438.h"
+#ifdef COUNT_1WIRE_CHANNEL
 
 #define FmlRaw_TemperatureOnChip 10
 #define FmlRaw_VoltageOfChip 11

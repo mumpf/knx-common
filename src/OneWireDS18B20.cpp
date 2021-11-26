@@ -1,10 +1,10 @@
-#ifdef COUNT_1WIRE_CHANNEL
 #include <Wire.h>
 #include <arduino.h>
 #include <math.h>
 
 #include "OneWireDS2482.h"
 #include "OneWireDS18B20.h"
+#ifdef COUNT_1WIRE_CHANNEL
 
 // #define DebugInfoTemp
 

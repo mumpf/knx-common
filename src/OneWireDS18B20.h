@@ -6,10 +6,10 @@
 */
 
 #pragma once
-#ifdef COUNT_1WIRE_CHANNEL
 
 #include <inttypes.h>
 #include "OneWire.h"
+#ifdef COUNT_1WIRE_CHANNEL
 #include "OneWireDS2482.h"
 
 // byte 0: temperature LSB

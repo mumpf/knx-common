@@ -1,7 +1,7 @@
 #pragma once
-#ifdef COUNT_1WIRE_CHANNEL
 #include <Helper.h>
 #include <Hardware.h>
+#ifdef COUNT_1WIRE_CHANNEL
 
 /**
  * OneWire Commands

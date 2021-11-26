@@ -1,8 +1,8 @@
 #pragma once
-#ifdef COUNT_1WIRE_CHANNEL
 #include <inttypes.h>
 #include <Arduino.h>
 #include "OneWire.h"
+#ifdef COUNT_1WIRE_CHANNEL
 // #include <OneWireDS2482.h>
 
 // #define DebugInfoSearch

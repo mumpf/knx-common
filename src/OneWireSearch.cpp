@@ -1,6 +1,6 @@
-#ifdef COUNT_1WIRE_CHANNEL
 #include "OneWireSearch.h"
 #include "OneWireDS2482.h"
+#ifdef COUNT_1WIRE_CHANNEL
 
 // #ifdef ONEWIRE_TRACE_SEARCH
 // onewire debug output

@@ -1,5 +1,5 @@
-#ifdef COUNT_1WIRE_CHANNEL
 #include "OneWire.h"
+#ifdef COUNT_1WIRE_CHANNEL
 #include "OneWireDS2482.h"
 #include "OneWireDS18B20.h"
 #include "OneWireDS1990.h"
