@@ -1,7 +1,5 @@
 #pragma once
 // #include <knx/bits.h>
-#ifdef SENSORMODULE
-#include "Helper.h"
 
 #define SENSOR_COUNT 5
 
@@ -27,7 +25,8 @@
 #define SENS_SGP30 8
 #define SENS_SCD41 9
 
-enum SensorState {
+enum SensorState
+{
     Off,
     Wakeup,
     Calibrate,
@@ -47,6 +46,9 @@ enum MeasureType {
     Lux = 256,
     Tof = 512
 };
+
+#ifdef SENSORMODULE
+#include "Helper.h"
 
 class Sensor
 {
