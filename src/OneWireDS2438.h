@@ -2,6 +2,7 @@
 
 #include <inttypes.h>
 #include "OneWire.h"
+#ifdef COUNT_1WIRE_CHANNEL
 #include "OneWireDS2482.h"
 
 #define WRITESCRATCH 0x4E
@@ -75,3 +76,4 @@ class OneWireDS2438 : public OneWire
     bool updateVDD();
     bool updateVAD();
 };
+#endif

@@ -9,6 +9,7 @@
 
 #include <inttypes.h>
 #include "OneWire.h"
+#ifdef COUNT_1WIRE_CHANNEL
 #include "OneWireDS2482.h"
 
 // byte 0: temperature LSB
@@ -105,3 +106,4 @@ class OneWireDS18B20 : public OneWire
     // read device's power requirements
     bool readPowerSupply();
 };
+#endif

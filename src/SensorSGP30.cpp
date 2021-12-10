@@ -1,3 +1,4 @@
+#ifdef SENSORMODULE
 #include "Wire.h"
 #include "SensorSGP30.h"
 #include "EepromManager.h"
@@ -244,3 +245,4 @@ void SensorSGP30::sensorUpdateState(void)
     // }
     // mLastAccuracy = Bsec::iaqAccuracy;
 }
+#endif

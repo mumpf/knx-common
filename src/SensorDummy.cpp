@@ -1,3 +1,4 @@
+#ifdef SENSORMODULE
 #include <Wire.h>
 #include "SensorDummy.h"
 
@@ -28,3 +29,4 @@ uint8_t SensorDummy::getI2cSpeed()
 {
     return 4; // n * 100kHz
 }
+#endif

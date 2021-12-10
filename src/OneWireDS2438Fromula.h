@@ -1,6 +1,7 @@
 #pragma once
 
 #include "OneWireDS2438.h"
+#ifdef COUNT_1WIRE_CHANNEL
 
 #define FmlRaw_TemperatureOnChip 10
 #define FmlRaw_VoltageOfChip 11
@@ -62,3 +63,4 @@ class OneWireDS2438Fromula
     static float userFunction29(float iTemp, float iVDD, float iVAD, float iVSens);
     static float userFunction30(float iTemp, float iVDD, float iVAD, float iVSens);
 };
+#endif

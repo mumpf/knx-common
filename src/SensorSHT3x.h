@@ -1,4 +1,5 @@
 #pragma once
+#ifdef SENSORMODULE
 #include "Sensor.h"
 
 #define SHT3X_ADDR 0x44
@@ -39,3 +40,4 @@ class SensorSHT3x : public Sensor
     bool begin() override;
     uint8_t getI2cSpeed() override;
 };
+#endif

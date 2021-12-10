@@ -1,4 +1,5 @@
 #pragma once
+#ifdef SENSORMODULE
 #include "Sensor.h"
 
 #define IAQCORE_I2C_ADDR (0x5A)
@@ -39,3 +40,4 @@ class SensorIAQCore : public Sensor
 
     bool begin() override;
 };
+#endif

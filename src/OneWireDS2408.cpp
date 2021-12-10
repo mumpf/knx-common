@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <Wire.h>
 #include "OneWire.h"
+#ifdef COUNT_1WIRE_CHANNEL
 #include "OneWireDS2408.h"
 
 OneWireDS2408::OneWireDS2408(tIdRef iId) : OneWire(iId) {
@@ -235,3 +236,4 @@ bool OneWireDS2408::resetActivity()
     pBM->wireWriteByte(DS2408_RESET_CMD);
     return (pBM->wireReadByte() == 0xAA);
 }
+#endif

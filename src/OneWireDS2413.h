@@ -2,6 +2,7 @@
 
 #include <inttypes.h>
 #include "OneWire.h"
+#ifdef COUNT_1WIRE_CHANNEL
 #include "OneWireDS2482.h"
 
 // Model Commands
@@ -51,3 +52,4 @@ class OneWireDS2413 : public OneWire
     uint8_t mIoMask = 0; // no input, just ouput
     uint8_t mIoInvertMask = 0; // no invert
 };
+#endif

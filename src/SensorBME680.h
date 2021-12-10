@@ -1,4 +1,5 @@
 #pragma once
+#ifdef SENSORMODULE
 
 #include "bsec/bsec.h"
 #include "Sensor.h"
@@ -39,3 +40,4 @@ protected:
     EepromManager *mEEPROM;
     uint8_t mLastAccuracy = 0;
 };
+#endif

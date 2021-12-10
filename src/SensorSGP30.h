@@ -1,4 +1,5 @@
 #pragma once
+#ifdef SENSORMODULE
 
 #include "Sensor.h"
 #include "EepromManager.h"
@@ -34,3 +35,4 @@ protected:
     EepromManager *mEEPROM;
     uint8_t mLastAccuracy = 0;
 };
+#endif

@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <Wire.h>
 #include "OneWire.h"
+#ifdef COUNT_1WIRE_CHANNEL
 #include "OneWireDS2413.h"
 
 OneWireDS2413::OneWireDS2413(tIdRef iId) : OneWire(iId){
@@ -177,3 +178,4 @@ bool OneWireDS2413::setParameter(OneWire::ModelParameter iModelParameter, uint8_
     }
     return lResult;
 }
+#endif

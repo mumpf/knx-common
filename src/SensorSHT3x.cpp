@@ -1,3 +1,4 @@
+#ifdef SENSORMODULE
 #include <Wire.h>
 #include "SensorSHT3x.h"
 
@@ -164,3 +165,4 @@ void SensorSHT3x::writeCommand(uint16_t iCmd)
     Wire.write(iCmd & 0xFF);
     Wire.endTransmission();
 }
+#endif

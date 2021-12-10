@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <Wire.h>
 #include "OneWire.h"
+#ifdef COUNT_1WIRE_CHANNEL
 #include "OneWireDS2438.h"
 #include "OneWireDS2438Fromula.h"
 
@@ -256,3 +257,4 @@ void OneWireDS2438::readScratchPad()
     mScratchPad[CURR_MSB] = pBM->wireReadByte();
     mScratchPad[THRESH] = pBM->wireReadByte();
 }
+#endif

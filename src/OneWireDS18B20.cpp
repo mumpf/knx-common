@@ -4,6 +4,7 @@
 
 #include "OneWireDS2482.h"
 #include "OneWireDS18B20.h"
+#ifdef COUNT_1WIRE_CHANNEL
 
 // #define DebugInfoTemp
 
@@ -210,3 +211,4 @@ void OneWireDS18B20::readScratchPad()
     }
     pBM->wireReset();
 }
+#endif

@@ -1,6 +1,7 @@
 #pragma once
 #include <inttypes.h>
 #include "OneWire.h"
+#ifdef COUNT_1WIRE_CHANNEL
 #include "OneWireSearch.h"
 
 // Chose between a table based CRC (flash expensive, fast)
@@ -141,3 +142,4 @@ class OneWireDS2482
 
     bool mSearchNewDevices = true;
 };
+#endif

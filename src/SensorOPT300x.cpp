@@ -1,3 +1,4 @@
+#ifdef SENSORMODULE
 #include <Wire.h>
 #include "SensorOPT300x.h"
 
@@ -109,3 +110,4 @@ bool SensorOPT300x::writeConfig(OPT300xConfig iConfig)
     Wire.write(iConfig.rawData & 0x00FF);
     return (Wire.endTransmission() == 0);
 }
+#endif
