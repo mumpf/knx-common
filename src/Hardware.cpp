@@ -81,6 +81,7 @@ bool boardCheck()
 {
     bool lResult = checkUartExistence();
 
+#ifndef NO_I2C
     // first we clear I2C-Bus
     Wire.end(); // in case, Wire.begin() was called before
     uint8_t lI2c = 0;
@@ -144,6 +145,7 @@ bool boardCheck()
     printResult(lResult);
 #endif
     // lResult = checkUartExistence();
+#endif // NO_I2C
     return lResult;
 }
 
