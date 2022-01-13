@@ -84,7 +84,7 @@ bool boardCheck()
     // first we clear I2C-Bus
     Wire.end(); // in case, Wire.begin() was called before
     uint8_t lI2c = 0;
-    lI2c = clearI2cBus(); // clear the I2C bus first before calling Wire.begin()
+    // lI2c = clearI2cBus(); // clear the I2C bus first before calling Wire.begin()
     if (lI2c != 0) {
         // we try to turn off power for the attached sensors or Hardware. Does not work on all devices
         savePower();
@@ -125,13 +125,44 @@ bool boardCheck()
 #endif
 
 #ifdef I2C_1WIRE_DEVICE_ADDRESSS
-    printDebug("Checking 1-Wire existence... ");
+#ifdef SENSORMODULE
     // ceck for I2C ack
+    printDebug("Checking 1-Wire existence... ");
     Wire.beginTransmission(I2C_1WIRE_DEVICE_ADDRESSS);
     lResult = (Wire.endTransmission() == 0);
     if (lResult)
         boardHardware |= BOARD_HW_ONEWIRE;
     printResult(lResult);
+#endif
+#ifdef WIREGATEWAY
+#if COUNT_1WIRE_BUSMASTER >= 1
+    // ceck for I2C ack
+    printDebug("Checking 1-Wire existence 0x19 ... ");
+    Wire.beginTransmission(I2C_1WIRE_DEVICE_ADDRESSS + 1);
+    lResult = (Wire.endTransmission() == 0);
+    if (lResult)
+        boardHardware |= BOARD_HW_ONEWIRE;
+    printResult(lResult);
+#endif
+#if COUNT_1WIRE_BUSMASTER >= 2
+    // ceck for I2C ack
+    printDebug("Checking 1-Wire existence 0x1A... ");
+    Wire.beginTransmission(I2C_1WIRE_DEVICE_ADDRESSS + 2);
+    lResult = (Wire.endTransmission() == 0);
+    if (lResult)
+        boardHardware |= BOARD_HW_ONEWIRE;
+    printResult(lResult);
+#endif
+#if COUNT_1WIRE_BUSMASTER == 3
+    // ceck for I2C ack
+    printDebug("Checking 1-Wire existence 0x1B... ");
+    Wire.beginTransmission(I2C_1WIRE_DEVICE_ADDRESSS + 3);
+    lResult = (Wire.endTransmission() == 0);
+    if (lResult)
+        boardHardware |= BOARD_HW_ONEWIRE;
+    printResult(lResult);
+#endif
+#endif
 #endif
 
 #ifdef I2C_RGBLED_DEVICE_ADDRESS
