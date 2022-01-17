@@ -125,6 +125,7 @@ bool boardCheck()
 #endif
 
 #ifdef I2C_1WIRE_DEVICE_ADDRESSS
+#if COUNT_1WIRE_BUSMASTER >= 1
 #ifdef SENSORMODULE
     // ceck for I2C ack
     printDebug("Checking 1-Wire existence... ");
@@ -135,7 +136,6 @@ bool boardCheck()
     printResult(lResult);
 #endif
 #ifdef WIREGATEWAY
-#if COUNT_1WIRE_BUSMASTER >= 1
     // ceck for I2C ack
     printDebug("Checking 1-Wire existence 0x19 ... ");
     Wire.beginTransmission(I2C_1WIRE_DEVICE_ADDRESSS + 1);
@@ -143,6 +143,7 @@ bool boardCheck()
     if (lResult)
         boardHardware |= BOARD_HW_ONEWIRE;
     printResult(lResult);
+#endif
 #endif
 #if COUNT_1WIRE_BUSMASTER >= 2
     // ceck for I2C ack
@@ -161,7 +162,6 @@ bool boardCheck()
     if (lResult)
         boardHardware |= BOARD_HW_ONEWIRE;
     printResult(lResult);
-#endif
 #endif
 #endif
 

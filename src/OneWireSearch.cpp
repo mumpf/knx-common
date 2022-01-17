@@ -26,7 +26,7 @@ int OneWireSearch::searchDebug(const char* iFormat, ...)
     va_start(lArgs, iFormat);
     int lResult = vsnprintf(lBuffer + lBufferPos + 4, 252 - lBufferPos, iFormat, lArgs);
     va_end(lArgs);
-    Serial.print(lBuffer);
+    SERIAL_DEBUG.print(lBuffer);
     return lResult;
 }
 // #endif
