@@ -184,6 +184,19 @@
 #define I2C_1WIRE_DEVICE_ADDRESSS 0x18 // Address of first DS2482 1-Wire-Busmaster chip, used are 0x19, 0x1A, 0x1B
 #define I2C_EEPROM_DEVICE_ADDRESSS 0x50 // Address of 24LC256 eeprom chip
 #endif
+#ifdef BOARD_MASIFI_ONEWIRE_ITSYBITSY_M0
+#define PROG_LED_PIN 9
+#define PROG_LED_PIN_ACTIVE_ON HIGH
+#define PROG_BUTTON_PIN A1
+#define PROG_BUTTON_PIN_INTERRUPT_ON FALLING
+#define INFO_LED_PIN 13
+#define INFO_LED_PIN_ACTIVE_ON HIGH
+#define COUNT_1WIRE_BUSMASTER 3
+#define COUNT_1WIRE_CHANNEL 90
+#define COUNT_LOG_CHANNEL 80
+#define I2C_1WIRE_DEVICE_ADDRESSS 0x18 // Address of first DS2482 1-Wire-Busmaster chip, used are 0x19, 0x1A, 0x1B
+#define I2C_EEPROM_DEVICE_ADDRESSS 0x50 // Address of 24LC256 eeprom chip
+#endif
 
 // board independent definitions
 

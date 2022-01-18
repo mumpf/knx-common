@@ -8,24 +8,24 @@ int printDebug(const char *format, ...)
     va_start(args, format);
     int lResult = vsnprintf(buffer, 256, format, args);
     va_end(args);
-    SerialUSB.print(buffer);
+    SERIAL_DEBUG.print(buffer);
     return lResult;
 }
 
 void printHEX(const char* iPrefix, const uint8_t *iData, size_t iLength)
 {
-    SerialUSB.print(iPrefix);
+    SERIAL_DEBUG.print(iPrefix);
     for (size_t i = 0; i < iLength; i++) {
-        if (iData[i] < 0x10) { SerialUSB.print("0"); }
-        SerialUSB.print(iData[i], HEX);
-        SerialUSB.print(" ");
+        if (iData[i] < 0x10) { SERIAL_DEBUG.print("0"); }
+        SERIAL_DEBUG.print(iData[i], HEX);
+        SERIAL_DEBUG.print(" ");
     }
-    SerialUSB.println();
+    SERIAL_DEBUG.println();
 }
 
 void printResult(bool iResult)
 {
-    SerialUSB.println(iResult ? "OK" : "FAIL");
+    SERIAL_DEBUG.println(iResult ? "OK" : "FAIL");
 }
 
 // ensure correct time delta check
